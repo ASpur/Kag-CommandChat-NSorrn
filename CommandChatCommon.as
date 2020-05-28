@@ -169,7 +169,7 @@ class CommandBase : ICommand
     u8 get_TargetPlayerSlot() { return target_player_slot;}
     void set_TargetPlayerSlot(u8 value) { target_player_slot = value; }
 
-    private bool target_player_blob_param = true;//Specifies if target_blob is supposed to come with the target_player. target_player_slot must be specified for this to take effect.
+    private bool target_player_blob_param = false;//Specifies if target_blob is supposed to come with the target_player. target_player_slot must be specified for this to take effect.
     bool get_TargetPlayerBlobParam() { return target_player_blob_param; }
     void set_TargetPlayerBlobParam(bool value) { target_player_blob_param = value; }
 
