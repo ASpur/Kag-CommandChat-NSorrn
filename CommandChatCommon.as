@@ -1,3 +1,4 @@
+//Zable was a great help with finding problems and suggesting features.
 shared interface ICommand
 {
     void Setup(string[]@ tokens);
@@ -42,12 +43,13 @@ shared interface ICommand
 
 class CommandBase : ICommand
 {
+    //Happens only once when the command is first created.
     CommandBase()
     {
         
     }
 
-    //Happens every time sends a message with ! as the first character, this is done as commands may differ depending on the amount of parameters given.
+    //Happens every time someone sends a message with ! as the first character. This is done as commands may differ depending on the amount of parameters given.
     void Setup(string[]@ tokens)//TODO - Find a more fitting name opposed to "Setup". This happens every time someone sends a message with ! as the first character. Better name please.    
     {
         error("SETUP METHOD NOT FOUND!");
@@ -145,11 +147,11 @@ class CommandBase : ICommand
         return true;
     }
 
-    private bool active = true;//If this is false, this command is disabled and unusable.
+    private bool active = true;//If this is false, this command is disabled and unusable (People will all permissions I.E rcon access bypass this).
     bool isActive() { return active; }
     void setActive(bool value) { active = value; }
 
-    private string in_gamemode = "xxxxx";//If the gamemode is equal to this, this command can be used.
+    private string in_gamemode = "xxxxx";//If the gamemode is equal to this, this command can be used without its specified permissions.
     string inGamemode(){ return in_gamemode; }
     void setGamemode(string value) { in_gamemode = value; }
 
@@ -161,7 +163,7 @@ class CommandBase : ICommand
     u16 get_PermLevel(){ return permlevel; }
     void set_PermLevel(u16 value) { permlevel = value; }
 
-    private u16 commandtype = 0;//The type of command, for the moment this does nothing.
+    private u16 commandtype = 0;//The type of command. For the moment this does nothing and can be ignored.
     u16 get_CommandType() { return commandtype; }
     void set_CommandType(u16 value){ commandtype = value; }
 
@@ -224,7 +226,7 @@ enum PermissionLevel//For what you need to use what command.
 
 
 
-
+//Rules, what player the command is being sent to, what is the message?
 void sendClientMessage(CRules@ this, CPlayer@ player, string message)
 {
 	CBitStream params;//Assign the params
@@ -527,6 +529,23 @@ bool getAndAssignTargets(CRules@ this, CPlayer@ player, string[]@ tokens, u8 tar
     return true;
 }
 
+bool getBool(string input_string, bool &out bool_value)
+{
+    input_string = input_string.toLower();
+    if(input_string == "true" || input_string == "1")
+    {
+        bool_value = true;
+        return true;
+    }
+    else if(input_string == "false" || input_string == "0")
+    {
+        bool_value = false;
+        return true;
+    }
+    bool_value = false;
+
+    return false;
+}
 
 /*CPlayer@ findNearestPlayer(bool skipclosest, Vec2f point, f32 radius)
 {

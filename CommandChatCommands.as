@@ -1,14 +1,44 @@
 #include "CommandChatCommon.as";
 
-class AllMats : CommandBase
+//Probably uneeded
+class C_Debug : CommandBase
 {
+    C_Debug()
+    {
+        names[0] = "debug".getHash();
+    }
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)
-        {
-            names[0] = "allmats".getHash();
-            in_gamemode = "sandbox";
-        }
+        permlevel = Moderator;
+        commandtype = Debug;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+		// print all blobs
+		CBlob@[] all;
+		getBlobs(@all);
+
+		for (u32 i = 0; i < all.length; i++)
+		{
+			CBlob@ blob = all[i];
+			print("[" + blob.getName() + " " + blob.getNetworkID() + "] ");
+		}
+        
+        return true;
+    }
+    
+}
+
+class AllMats : CommandBase
+{
+    AllMats()
+    {
+        names[0] = "allmats".getHash();
+        in_gamemode = "sandbox";
+    }
+    void Setup(string[]@ tokens) override
+    {
         permlevel = Moderator;
         commandtype = Legacy;
     }
@@ -788,16 +818,17 @@ class TagBlob : CommandBase
         return true;
     }
 }
+
 //!hidecommands - after using this command you will no longer print your !command messages to chat, use again to disable this
+//This command saves its setting to a ConfigFile
 class HideCommands : CommandBase
 {
+    HideCommands()
+    {
+        names[0] = "hidecommands".getHash();
+    }
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)
-        {
-            names[0] = "hidecommands".getHash();
-        }
-        
         blob_must_exist = false;
         permlevel = SuperAdmin;
         no_sv_test = true;
@@ -818,7 +849,15 @@ class HideCommands : CommandBase
             sendClientMessage(rules, player, "Commands unhidden");
         }
         
-        
+        ConfigFile cfg();
+        if (!cfg.loadFile("../Cache/CommandChatConfig.cfg"))
+		{
+			cfg.saveFile("CommandChatConfig.cfg");
+		}
+
+        cfg.add_bool(player.getUsername() + "_hidecom", hidecom);
+        cfg.saveFile("CommandChatConfig.cfg");
+
         rules.set_bool(player.getUsername() + "_hidecom", hidecom);
         return false;
     }
@@ -962,7 +1001,7 @@ class Ban : CommandBase
     {
         if(names[0] == 0)
         {
-            names[0] = "ban".getHash();
+            names[0] = "banp".getHash();
         }
         
 
@@ -1115,15 +1154,16 @@ class NextMap : CommandBase
     }
 }
 //!team "team" (player) - sets your own blobs to this, unless a player was specified.
+//!team get "player" - Gets the player's blob's team. Requires no perms. 
 class Team : CommandBase
 {
+    Team()
+    {
+        names[0] = "team".getHash();
+    }
+    
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)
-        {
-            names[0] = "team".getHash();
-        }
-
         permlevel = Admin;
         commandtype = Template;
         
@@ -1132,6 +1172,11 @@ class Team : CommandBase
             blob_must_exist = false;
             target_player_slot = 2;
             target_player_blob_param = true;
+            
+            if(tokens[1] == "get")
+            {
+                permlevel = 0;
+            }
         }
         else if (tokens.length == 1)
         {
@@ -1151,7 +1196,14 @@ class Team : CommandBase
         int wanted_team = parseInt(tokens[1]);
         if (tokens.length > 2)
         {
-            target_blob.server_setTeamNum(wanted_team);
+            if(tokens[1] == "get")//If the first param is "get"
+            {//Find that player's blob's team.
+                sendClientMessage(rules, player, "This player's controlled blob's team is " + target_blob.getTeamNum()); 
+            }
+            else
+            {
+                target_blob.server_setTeamNum(wanted_team);
+            }
         }
         else
         {
@@ -1162,6 +1214,7 @@ class Team : CommandBase
     }
 }
 //!playerteam "team" (player) - like !team but it sets the players team (in the scoreboard and on respawn generally), it does not change the blobs team
+//!playerteam get "player" - Gets the player's team. Requires no perms. 
 class PlayerTeam : CommandBase
 {
     void Setup(string[]@ tokens) override
@@ -1178,6 +1231,11 @@ class PlayerTeam : CommandBase
         if(tokens.length > 2)
         {
             target_player_slot = 2;
+            
+            if(tokens[1] == "get")
+            {
+                permlevel = 0;
+            }
         }
         else if(tokens.length == 1)
         {
@@ -1198,7 +1256,14 @@ class PlayerTeam : CommandBase
         
         if (tokens.length > 2)
         { 	
-            target_player.server_setTeamNum(wanted_team);
+            if(tokens[1] == "get")//If the first param is "get"
+            {//Find that player's blob's team.
+                sendClientMessage(rules, player, "This player's team is " + target_player.getTeamNum()); 
+            }
+            else
+            {
+                target_player.server_setTeamNum(wanted_team);
+            }
         }
         else
         {
@@ -1839,23 +1904,168 @@ class Lantern : CommandBase
     }
 }
 
-//Template
-/*
-class Input_Name_Here : CommandBase
+class ChangeGameState : CommandBase
 {
+    ChangeGameState()
+    {
+        names[0] = "startgame".getHash();
+        names[1] = "game".getHash();
+        names[2] = "gameover".getHash();
+        names[3] = "endgame".getHash();
+        names.push_back("warmup".getHash());
+        names.push_back("intermission".getHash());
+    }
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)//Happens only once
-        {
-            names[0] = "Input_Name_Here".getHash();
-        }
-
-        permlevel = Admin;//Requires adminship
+        permlevel = SuperAdmin;//Requires adminship
         
         commandtype = Template;
     }
 
     bool CommandCode(CRules@ this, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        if(tokens[0] == "startgame" || tokens[0] == "game")
+        {
+            this.SetCurrentState(GAME);
+        }
+        else if(tokens[0] == "gameover" || tokens[0] == "endgame")
+        {
+            this.SetCurrentState(GAME_OVER);
+        }
+        else if(tokens[0] == "warmup")
+        {
+            this.SetCurrentState(WARMUP);
+        }
+        else if(tokens[0] == "intermission")
+        {
+            this.SetCurrentState(INTERMISSION);
+        }
+        return true;
+    }
+}
+
+//!addscript (true for all clients and server. false for server only) SCRIPT (CLASS) (IDENTIFIER, if needed)
+//!addscriptp (true|false) SCRIPT PLAYER
+class C_AddScript : CommandBase
+{
+    C_AddScript()
+    {
+        names[0] = "addscript".getHash();
+        names[1] = "addscriptp".getHash();
+    }
+    
+    void Setup(string[]@ tokens) override
+    {
+        blob_must_exist = false;
+
+        permlevel = SuperAdmin;//Requires adminship
+        no_sv_test = true;
+        
+        commandtype = Template;
+
+        minimum_parameter_count = 3;
+        if(tokens[0] == "addscriptp")
+        {
+            target_player_slot = 3;
+            target_player_blob_param = true;
+        }
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        bool relayToClients;
+        string script_name;
+        string target_class;
+        u16 target_netid = 0;
+        if(!getBool(tokens[1], relayToClients))
+        {
+            sendClientMessage(rules, player, "The second param was expecting either true|1 or false|0. It got neither.");
+            return true;
+        }
+
+        script_name = tokens[2];
+       
+        target_class = tokens[3].toLower();
+        
+        if(tokens[0] == "addscriptp")
+        {
+            target_netid = target_blob.getNetworkID();
+            target_class = "blob";
+        }
+
+        if(target_class == "map" || target_class == "cmap" || target_class == "rules" || target_class == "crules")
+        {
+            
+        }
+        else if(tokens.size() > 4 && target_netid == 0)
+        {
+            target_netid = parseInt(tokens[4]);
+            CBlob@ target_blobert = getBlobByNetworkID(target_netid);//I'm not good at naming variables. Apologies to anyone named blobert.
+            if(target_blobert == null)
+            {
+                sendClientMessage(rules, player, "Could not find the blob associated with the NetID");
+                return true;
+            }
+            else if(target_class == "csprite" || target_class == "sprite")
+            {
+                CSprite@ target_sprite = target_blobert.getSprite();
+                if(target_sprite == null)
+                {
+                    sendClientMessage(rules, player, "This blob's sprite is null"); return false;
+                }
+            }
+            else if(target_class == "cbrain" || target_class == "brain")
+            {
+                CBrain@ target_brain = target_blobert.getBrain();
+                if(target_brain == null)
+                {
+                    sendClientMessage(rules, player, "The blob's brain is null"); return false;
+                }
+            }
+            else if(target_class == "cshape" || target_class == "shape")
+            {
+                CShape@ target_shape = target_blobert.getShape();
+                if(target_shape == null)
+                {
+                    sendClientMessage(rules, player, "The blob's shape is null"); return false;
+                }
+            }
+        }
+        else if (target_netid == 0)
+        {
+            sendClientMessage(rules, player, "A NetID is required as the forth parameter");
+            return true;
+        }
+
+    
+        CBitStream params;
+        params.write_string(script_name);
+        params.write_string(target_class);
+        params.write_u16(target_netid);
+
+        rules.SendCommand(rules.getCommandID("addscript"), params, relayToClients);
+
+
+        return true;
+    }
+}
+
+//Template
+/*
+class Input_Name_Here : CommandBase
+{
+    Input_Name_Here()
+    {
+        names[0] = "Input_Name_Here".getHash();
+    }
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = Admin;//Requires adminship
+        
+        commandtype = Template;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
         //Code when the command runs happens here
         return true;

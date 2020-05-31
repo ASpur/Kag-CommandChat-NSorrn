@@ -64,41 +64,62 @@
 
 //!addtoinventory {blob} (amount) (player)
 
+//!getidvec "netid" - Sends to chat where the blob is. The Vector.
+
 //Custom roles.
 
-//!team playerusername should print out player team
+//Store hidecommands var in a cfg file
+
+//IDEAS: 
+
+//Seperate server only and client only command arrays.
+
+//Command that draws NetID of moused over blob.
 
 #include "MakeSeed.as";
 #include "MakeCrate.as";
 #include "MakeScroll.as";
 
+dictionary player_last_sent(); 
+bool ChatCommandCoolDown = false; // Enable if you want cooldowns between commands on your server.
+uint ChatCommandDelay = 30 * 3; // Cooldown in seconds.
+
 void onInit(CRules@ this)
 {
+    //onCommand stuff
 	this.addCommandID("clientmessage");	
 	this.addCommandID("teleport");
     this.addCommandID("clientshowhelp");
 	this.addCommandID("allclientshidehelp");
     this.addCommandID("announcement");
     this.addCommandID("colorlantern");
+    this.addCommandID("addscript");
+    //onCommand end
 
     if(!isServer())
     {
         return;
     }
+    //Stored value init
+    ConfigFile cfg();
+    if (cfg.loadFile("../Cache/CommandChatConfig.cfg"))
+    {
+        //Load values
+    }
+    //Stored value init end
 
+    //Command array init
     array<ICommand@> initcommands();
 
     this.set("ChatCommands", initcommands);
-
-
-
-
+    //Command array init end
 
 
 
 
     array<ICommand@> _commands = 
     {
+        C_Debug(),
         AllMats(),
         WoodStone(),
         StoneWood(),
@@ -150,6 +171,8 @@ void onInit(CRules@ this)
         PlayerNetID(),
         Announce(),
         Lantern(),
+        ChangeGameState(),
+        C_AddScript(),
         CommandCount()//End*/
     };
 
@@ -169,14 +192,41 @@ void onInit(CRules@ this)
     }
 
     this.set("ChatCommands", commands);
+    
 }//End of onInit
+
+void onRestart( CRules@ this )
+{
+    this.set_u32("announcementtime", 0);
+    player_last_sent.deleteAll();
+}
+
+void onNewPlayerJoin( CRules@ this, CPlayer@ player )
+{
+    if(!isServer() || player == null)
+    {
+        return;
+    }
+
+    //Stored value init (onplayerjoin)
+    ConfigFile cfg();
+    if (cfg.loadFile("../Cache/CommandChatConfig.cfg"))
+    {
+        bool _hidecom;
+        
+        _hidecom = cfg.read_bool(player.getUsername() + "_hidecom");
+        
+        this.set_bool(player.getUsername() + "_hidecom", _hidecom);
+    }
+    //Stored value init end
+}
 
 bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out text_out, CPlayer@ player)
 {
 	//--------MAKING CUSTOM COMMANDS-------//
-	// Inspect the !test command
+	// Inspect the Test command
     // It will show you the basics
-    // Inspect the commented out !playercount command if you desire a more barebones command. 
+    // Inspect the commented out PlayerCount command if you desire a more barebones command. 
 
 	if (player is null)
     {
@@ -186,10 +236,6 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
 
 	CBlob@ blob = player.getBlob(); // now, when the code references "blob," it means the player who called the command
 
-	//if (blob is null && !player.isMod())
-	//{
-	//	return true;
-	//}
 	Vec2f pos;
 	int team;
 	if (blob !is null)
@@ -213,19 +259,6 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     {
         return true;
     }
-	
-	if (text_in == "!debug" && player.isMod())//TODO - should probably make this a command
-	{
-		// print all blobs
-		CBlob@[] all;
-		getBlobs(@all);
-
-		for (u32 i = 0; i < all.length; i++)
-		{
-			CBlob@ blob = all[i];
-			print("[" + blob.getName() + " " + blob.getNetworkID() + "] ");
-		}
-	}
 
     string[]@ tokens = (text_in.substr(1, text_in.size())).split(" ");
 
@@ -242,6 +275,8 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         return !this.get_bool(player.getUsername() + "_hidecom");
     }
 
+    int token0Hash = tokens[0].getHash();
+
     for(u16 p = 0; p < commands.size(); p++)
     {
         commands[p].RefreshVars();
@@ -254,7 +289,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         }
         for(u16 name = 0; name < _names.size(); name++)
         {
-            if(_names[name] == tokens[0].getHash())
+            if(_names[name] == token0Hash)
             {
                 if(!commands[p].isActive() && !getSecurity().checkAccess_Command(player, "ALL"))//If the command is not active and the player isn't a superadmin
                 {
@@ -271,17 +306,39 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             break;
         }
     }
+    
     this.set("ChatCommands", commands);
 
-
     
+    //Spawn anything
     if(command == null && (sv_test || getSecurity().checkAccess_Command(player, "admin_color")))//If this isn't a command and either sv_test is on or the player is an admin.
     {
+        if(ChatCommandCoolDown)
+        {
+            u16 lastChatTime;
+            if(player_last_sent.get(""+ player.getNetworkID(), lastChatTime)){}
+            else { lastChatTime = 0; }
+
+            if(getGameTime() < lastChatTime)
+            {
+                sendClientMessage(this, player, "Command is still under cooldown for " + Maths::Round(float(lastChatTime - getGameTime()) / 30.0f)  + " Seconds");
+                return !this.get_bool(player.getUsername() + "_hidecom");
+            }
+        }
+
         string name = text_in.substr(1, text_in.size());
         if(blob != null)
         {
-            server_CreateBlob(name, team, pos);
+            CBlob@ created_blob = server_CreateBlob(name, team, pos);
+            if(created_blob.getName() == "")
+            {
+                sendClientMessage(this, player, "Failed to spawn " + name);
+                return !this.get_bool(player.getUsername() + "_hidecom");
+            }
+            
+            player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);
         }
+
         return !this.get_bool(player.getUsername() + "_hidecom");
     }
 
@@ -312,6 +369,25 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             return false;//Failing to get target_player warrants stopping the command.
         }
     }		
+
+
+    //Cooldown check.
+    if(ChatCommandCoolDown && !getSecurity().checkAccess_Command(player, "admin_color"))
+    {
+        u16 lastChatTime;
+        if(player_last_sent.get(""+ player.getNetworkID(), lastChatTime)){}
+        else { lastChatTime = 0; }
+
+        if(getGameTime() < lastChatTime)
+        {
+            sendClientMessage(this, player, "Command is still under cooldown for " + Maths::Round(float(lastChatTime - getGameTime()) / 30.0f)  + " Seconds");
+            return !this.get_bool(player.getUsername() + "_hidecom");
+        }
+    }
+
+    player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);
+
+
 
     if(command.CommandCode(this, tokens, player, blob, pos, team, target_player, target_blob))
     {
@@ -415,11 +491,64 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
             lantern.SetLightColor(color);
         }
     }
-}
+    else if(cmd == this.getCommandID("addscript"))
+    {
+        print("CAUGHT");
+        string script_name = params.read_string();
+        string target_class = params.read_string();
+        u16 target_netid = params.read_u16();
 
-void onRestart( CRules@ this )
-{
-    this.set_u32("announcementtime", 0);
+
+        if(target_class == "map" || target_class == "cmap")
+        {
+            getMap().AddScript(script_name);
+        }
+        else if(target_class == "rules" || target_class == "crules")
+        {
+            getRules().AddScript(script_name);
+        }
+        else
+        {
+            CBlob@ target_blobert = getBlobByNetworkID(target_netid);//I'm not good at naming variables. Apologies to anyone named blobert.
+            if(target_blobert == null)
+            {
+                client_AddToChat("Could not find the blob associated with the NetID", SColor(255, 255, 0, 0));//Color of the text
+                return;
+            }
+            
+            if(target_class == "cblob" || target_class == "blob")
+            {
+                target_blobert.AddScript(script_name);
+            }
+            else if(target_class == "csprite" || target_class == "sprite")
+            {
+                CSprite@ target_sprite = target_blobert.getSprite();
+                if(target_sprite == null)
+                {
+                    client_AddToChat("This blob's sprite is null", SColor(255, 255, 0, 0)); return;
+                }
+                target_sprite.AddScript(script_name);
+            }
+            else if(target_class == "cbrain" || target_class == "brain")
+            {
+                CBrain@ target_brain = target_blobert.getBrain();
+                if(target_brain == null)
+                {
+                    client_AddToChat("The blob's brain is null", SColor(255, 255, 0, 0)); return;
+                }
+                target_brain.AddScript(script_name);
+            }
+            else if(target_class == "cshape" || target_class == "shape")
+            {
+                CShape@ target_shape = target_blobert.getShape();
+                if(target_shape == null)
+                {
+                    client_AddToChat("The blob's shape is null", SColor(255, 255, 0, 0)); return;
+                }
+                target_shape.AddScript(script_name);
+            }
+        }
+    }
 }
 
 void onRender( CRules@ this )
@@ -515,7 +644,7 @@ void onRender( CRules@ this )
 
 bool onClientProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
-	if (text_in == "!debug" && !getNet().isServer())
+	if (text_in == "!debug" && !isServer())
 	{
 		// print all blobs
 		CBlob@[] all;
