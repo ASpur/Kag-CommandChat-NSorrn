@@ -15,29 +15,29 @@ shared interface ICommand
     string inGamemode();
     void setGamemode(string value);
 
-    array<int> get_Names();
-    void set_Names(array<int> value);
+    array<int> getNames();
+    void setNames(array<int> value);
     
-    u16 get_PermLevel();
-    void set_PermLevel(u16 value);
+    u16 getPermLevel();
+    void setPermLevel(u16 value);
 
-    u16 get_CommandType();
-    void set_CommandType(u16 value);
+    u16 getCommandType();
+    void setCommandType(u16 value);
     
-    u8 get_TargetPlayerSlot();
-    void set_TargetPlayerSlot(u8 value);
+    u8 getTargetPlayerSlot();
+    void setTargetPlayerSlot(u8 value);
     
-    bool get_TargetPlayerBlobParam();
-    void set_TargetPlayerBlobParam(bool value);
+    bool getTargetPlayerBlobParam();
+    void setTargetPlayerBlobParam(bool value);
 
-    bool get_NoSvTest();
-    void set_NoSvTest(bool value);
+    bool getNoSvTest();
+    void setNoSvTest(bool value);
 
-    bool get_BlobMustExist();
-    void set_BlobMustExist(bool value);
+    bool getBlobMustExist();
+    void setBlobMustExist(bool value);
 
-    u8 get_MinimumParameterCount();
-    void set_MinimumParameterCount(u8 value);
+    u8 getMinimumParameterCount();
+    void setMinimumParameterCount(u8 value);
 
 }
 
@@ -101,17 +101,17 @@ class CommandBase : ICommand
 
 
         //Security check.
-        if(permlevel == Moderator && !player.isMod() && !_sv_test)
+        if(permlevel == pModerator && !player.isMod() && !_sv_test)
         {
             sendClientMessage(rules, player, "You must be a moderator or higher to use this command.");
             return false;
         }
-        if(permlevel == Admin && !security.checkAccess_Command(player, "admin_color") && !_sv_test)
+        if(permlevel == pAdmin && !security.checkAccess_Command(player, "admin_color") && !_sv_test)
         {
             sendClientMessage(rules, player, "You must be a admin or higher to use this command.");
             return false;
         }
-        if(permlevel == SuperAdmin && !security.checkAccess_Command(player, "ALL") && !_sv_test)
+        if(permlevel == pSuperAdmin && !security.checkAccess_Command(player, "ALL") && !_sv_test)
         {
             sendClientMessage(rules, player, "You must be a superadmin to use this command.");
             return false;
@@ -126,7 +126,7 @@ class CommandBase : ICommand
             sendClientMessage(rules, player, "You do not sufficient permissions to kick a player.");
             return false;
         }
-        if(permlevel == punBan && !security.checkAccess_Command(player, "unban")){
+        if(permlevel == pUnban && !security.checkAccess_Command(player, "unban")){
             sendClientMessage(rules, player, "You do not sufficient permissions to unban a player.");
             return false;
         }
@@ -156,36 +156,36 @@ class CommandBase : ICommand
     void setGamemode(string value) { in_gamemode = value; }
 
     private array<int> names(4);//Names to call this command. If more than 4 are desired, use names.push_back();
-    array<int> get_Names() { return names; }
-    void set_Names(array<int> value) { names = value; }
+    array<int> getNames() { return names; }
+    void setNames(array<int> value) { names = value; }
 
     private u16 permlevel = 0;//The role/permission required to use this command. 0 is nothing.
-    u16 get_PermLevel(){ return permlevel; }
-    void set_PermLevel(u16 value) { permlevel = value; }
+    u16 getPermLevel(){ return permlevel; }
+    void setPermLevel(u16 value) { permlevel = value; }
 
     private u16 commandtype = 0;//The type of command. For the moment this does nothing and can be ignored.
-    u16 get_CommandType() { return commandtype; }
-    void set_CommandType(u16 value){ commandtype = value; }
+    u16 getCommandType() { return commandtype; }
+    void setCommandType(u16 value){ commandtype = value; }
 
     private u8 target_player_slot = 0;//Specifies what param is expected to have a username. Gets this player and puts it into target_player
-    u8 get_TargetPlayerSlot() { return target_player_slot;}
-    void set_TargetPlayerSlot(u8 value) { target_player_slot = value; }
+    u8 getTargetPlayerSlot() { return target_player_slot;}
+    void setTargetPlayerSlot(u8 value) { target_player_slot = value; }
 
     private bool target_player_blob_param = false;//Specifies if target_blob is supposed to come with the target_player. target_player_slot must be specified for this to take effect.
-    bool get_TargetPlayerBlobParam() { return target_player_blob_param; }
-    void set_TargetPlayerBlobParam(bool value) { target_player_blob_param = value; }
+    bool getTargetPlayerBlobParam() { return target_player_blob_param; }
+    void setTargetPlayerBlobParam(bool value) { target_player_blob_param = value; }
 
     private bool no_sv_test = false;//All commands besides those specified with no_sv_test = true; can be used when sv_test is 1.
-    bool get_NoSvTest() { return no_sv_test; }
-    void set_NoSvTest(bool value) { no_sv_test = value; }
+    bool getNoSvTest() { return no_sv_test; }
+    void setNoSvTest(bool value) { no_sv_test = value; }
 
     private bool blob_must_exist = true;//If this is true, when the player's blob does not exist the command code will not run and the player will be informed that their blob is null.
-    bool get_BlobMustExist() { return blob_must_exist; }
-    void set_BlobMustExist(bool value) { blob_must_exist = value; }
+    bool getBlobMustExist() { return blob_must_exist; }
+    void setBlobMustExist(bool value) { blob_must_exist = value; }
 
     private u8 minimum_parameter_count = 0;//The minimum amount of parameters that must be used in this command.
-    u8 get_MinimumParameterCount() { return minimum_parameter_count; }
-    void set_MinimumParameterCount(u8 value) { minimum_parameter_count = value; }
+    u8 getMinimumParameterCount() { return minimum_parameter_count; }
+    void setMinimumParameterCount(u8 value) { minimum_parameter_count = value; }
 }
 
 enum CommandType//For the interactive help menu (todo)
@@ -200,11 +200,11 @@ enum CommandType//For the interactive help menu (todo)
 
 enum PermissionLevel//For what you need to use what command.
 {
-    Moderator = 1,
-    Admin,
-    SuperAdmin,
+    pModerator = 1,
+    pAdmin,
+    pSuperAdmin,
     pBan,
-    punBan,
+    pUnban,
     pKick,
     pFreeze,
 }

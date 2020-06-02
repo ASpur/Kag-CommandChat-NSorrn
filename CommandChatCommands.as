@@ -9,7 +9,7 @@ class C_Debug : CommandBase
     }
     void Setup(string[]@ tokens) override
     {
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Debug;
     }
 
@@ -39,7 +39,7 @@ class AllMats : CommandBase
     }
     void Setup(string[]@ tokens) override
     {
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -67,7 +67,7 @@ class WoodStone : CommandBase
             names[0] = "woodstone".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -93,7 +93,7 @@ class StoneWood : CommandBase
             names[0] = "stonewood".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -118,7 +118,7 @@ class Wood : CommandBase
             names[0] = "wood".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -138,7 +138,7 @@ class Stones : CommandBase
             names[0] = "stones".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -158,7 +158,7 @@ class Gold : CommandBase
             names[0] = "gold".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -181,7 +181,7 @@ class Tree : CommandBase
             names[0] = "tree".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -201,7 +201,7 @@ class BTree : CommandBase
             names[0] = "btree".getHash();
             in_gamemode = "sandbox";
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -220,7 +220,7 @@ class AllArrows : CommandBase
         {
             names[0] = "allarrows".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -242,7 +242,7 @@ class Arrows : CommandBase
         {
             names[0] = "arrows".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -261,7 +261,7 @@ class AllBombs : CommandBase
         {
             names[0] = "allbombs".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -284,7 +284,7 @@ class Bombs : CommandBase
         {
             names[0] = "bombs".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -306,7 +306,7 @@ class SpawnWater : CommandBase
         {
             names[0] = "spawnwater".getHash();
         }
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Legacy;
     }
 
@@ -325,7 +325,7 @@ class Seed : CommandBase
         {
             names[0] = "seed".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -344,7 +344,7 @@ class Scroll : CommandBase
         {
             names[0] = "scroll".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
         minimum_parameter_count = 1;
     }
@@ -370,7 +370,7 @@ class FishySchool : CommandBase
         {
             names[0] = "fishyschool".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -392,7 +392,7 @@ class ChickenFlock : CommandBase
         {
             names[0] = "chickenflock".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -414,7 +414,7 @@ class Crate : CommandBase
         {
             names[0] = "crate".getHash();
         }
-        permlevel = Moderator;
+        permlevel = pModerator;
         commandtype = Legacy;
     }
 
@@ -447,7 +447,7 @@ class Test : CommandBase
             names[1] = "testy".getHash();//Optionally, !testy can also be used to use this command
         }
         
-        permlevel = Admin;//Assigns the permission level to be admin. You must be an admin to use this command.
+        permlevel = pAdmin;//Assigns the permission level to be admin. You must be an admin to use this command.
 			
         commandtype = Testing;//The type of command this is. This is only useful in displaying things in the interactive help menu (not yet made). So atm this does nothing.
 
@@ -462,7 +462,7 @@ class Test : CommandBase
 
             blob_must_exist = false;//The player does not have to have a blob to use this command anymore.
 
-            permlevel = SuperAdmin;//Reassign the perm level to be SuperAdmin. You must now be a SuperAdmin to use this command.
+            permlevel = pSuperAdmin;//Reassign the perm level to be SuperAdmin. You must now be a SuperAdmin to use this command.
             
             target_player_slot = 2;//Specifies which token the playerusername is on. In this case it is the third token, but since things start from 0 in programming we assign it to 2. 
             //Specifying this tells some code to figure out what player has the specified username and put it into the "target_player" variable for later use in CommandCode. 
@@ -674,7 +674,7 @@ class Announce : CommandBase
 
         blob_must_exist = false;
         no_sv_test = true;
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
     }
 
@@ -709,7 +709,7 @@ class TagPlayerBlob : CommandBase
             names[0] = "tagplayerblob".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         minimum_parameter_count = 3;
         commandtype = Debug;
 
@@ -771,7 +771,7 @@ class TagBlob : CommandBase
         }
         
         blob_must_exist = false;
-        permlevel = Admin;
+        permlevel = pAdmin;
         minimum_parameter_count = 4;
         commandtype = Debug;
     }
@@ -830,7 +830,7 @@ class HideCommands : CommandBase
     void Setup(string[]@ tokens) override
     {
         blob_must_exist = false;
-        permlevel = SuperAdmin;
+        permlevel = pSuperAdmin;
         no_sv_test = true;
         commandtype = Template;
     }
@@ -873,7 +873,7 @@ class SpinEverything : CommandBase
         }
         
         blob_must_exist = false;
-        permlevel = SuperAdmin;
+        permlevel = pSuperAdmin;
         commandtype = Template;
     }
 
@@ -909,7 +909,7 @@ class SetTime : CommandBase
         }
 
         blob_must_exist = false;
-        permlevel = SuperAdmin;
+        permlevel = pSuperAdmin;
         minimum_parameter_count = 1;
         commandtype = Template;
     }
@@ -1044,7 +1044,7 @@ class Unban : CommandBase
         
         
         blob_must_exist = false;
-        permlevel = punBan;
+        permlevel = pUnban;
         commandtype = Template;
         minimum_parameter_count = 1;
     }
@@ -1140,7 +1140,7 @@ class NextMap : CommandBase
 
         active = false;//Command will not work.
 
-        permlevel = Admin;
+        permlevel = pAdmin;
 
         blob_must_exist = false;
         commandtype = Template;
@@ -1164,7 +1164,7 @@ class Team : CommandBase
     
     void Setup(string[]@ tokens) override
     {
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
         
         if(tokens.length > 2)
@@ -1224,7 +1224,7 @@ class PlayerTeam : CommandBase
             names[0] = "playerteam".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
         blob_must_exist = false;
         
@@ -1290,7 +1290,7 @@ class ChangeName : CommandBase
 
         if(tokens.length > 2)
         {
-            permlevel = Admin;
+            permlevel = pAdmin;
             target_player_slot = 2;
         }
     }
@@ -1324,7 +1324,7 @@ class Teleport : CommandBase
         target_player_slot = 1;
 		target_player_blob_param = true;//This command requires the targets blob
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
         minimum_parameter_count = 1;
 
@@ -1411,7 +1411,7 @@ class Coin : CommandBase
             names[0] = "coin".getHash();
         }
         
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
         blob_must_exist = false;
         minimum_parameter_count = 1;
@@ -1448,7 +1448,7 @@ class Damage : CommandBase
             names[0] = "damage".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
         minimum_parameter_count = 1;
 
@@ -1489,7 +1489,7 @@ class Kill : CommandBase
             names[0] = "kill".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         blob_must_exist = false;
         target_player_slot = 1;
         target_player_blob_param = true;
@@ -1516,7 +1516,7 @@ class Morph : CommandBase
             names[1] = "playerblob".getHash();
             names[2] = "actor".getHash();
         }
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
         minimum_parameter_count = 1;
 
@@ -1580,7 +1580,7 @@ class AddRobot : CommandBase
         }
         blob_must_exist = false;
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         commandtype = Template;
     }
 
@@ -1680,7 +1680,7 @@ class ForceRespawn : CommandBase
             names[0] = "forcerespawn".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         if(tokens.length > 1)
         {
             blob_must_exist = false;
@@ -1760,7 +1760,7 @@ class Give : CommandBase
             names[0] = "give".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
         minimum_parameter_count = 1;
         commandtype = Template;
 
@@ -1817,7 +1817,7 @@ class SetHp : CommandBase
             names[0] = "sethp".getHash();
         }
 
-        permlevel = Admin;
+        permlevel = pAdmin;
 
         minimum_parameter_count = 1;
 
@@ -1880,7 +1880,7 @@ class Lantern : CommandBase
     }
     void Setup(string[]@ tokens) override
     {
-        permlevel = Admin;
+        permlevel = pAdmin;
         if(tokens.length > 1)
         {
             minimum_parameter_count = 3;
@@ -1917,7 +1917,7 @@ class ChangeGameState : CommandBase
     }
     void Setup(string[]@ tokens) override
     {
-        permlevel = SuperAdmin;//Requires adminship
+        permlevel = pSuperAdmin;//Requires adminship
         
         commandtype = Template;
     }
@@ -1958,7 +1958,7 @@ class C_AddScript : CommandBase
     {
         blob_must_exist = false;
 
-        permlevel = SuperAdmin;//Requires adminship
+        permlevel = pSuperAdmin;//Requires adminship
         no_sv_test = true;
         
         commandtype = Template;
@@ -2060,7 +2060,7 @@ class Input_Name_Here : CommandBase
     }
     void Setup(string[]@ tokens) override
     {
-        permlevel = Admin;//Requires adminship
+        permlevel = pAdmin;//Requires adminship
         
         commandtype = Template;
     }

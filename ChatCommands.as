@@ -281,7 +281,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     {
         commands[p].RefreshVars();
         commands[p].Setup(tokens);
-        array<int> _names = commands[p].get_Names(); 
+        array<int> _names = commands[p].getNames(); 
         if(_names.size() == 0)
         {
             error("A command did not have a name to go by. Please add a name to this command");
@@ -362,9 +362,9 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     CBlob@ target_blob;
 
     //If the command wants target_player
-    if(command.get_TargetPlayerSlot() != 0)
+    if(command.getTargetPlayerSlot() != 0)
     {   //Get target_player.
-        if(!getAndAssignTargets(this, player, tokens, command.get_TargetPlayerSlot(), command.get_TargetPlayerBlobParam(), target_player, target_blob))
+        if(!getAndAssignTargets(this, player, tokens, command.getTargetPlayerSlot(), command.getTargetPlayerBlobParam(), target_player, target_blob))
         {
             return false;//Failing to get target_player warrants stopping the command.
         }
