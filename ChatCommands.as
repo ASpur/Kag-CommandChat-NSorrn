@@ -68,7 +68,13 @@
 
 //Custom roles.
 
-//Store hidecommands var in a cfg file
+//!foreverbunnify "username"
+//Saves something in a config that a person is bunnified.
+//Any time the user with that username joins, it mutes them and turns them into a bunny
+//Note, do not use target_player. Get the username if it is possible, if not possible just put it in the config as is.
+
+//!unbunnify "username"
+//Note, do not use target_player. Get the username if it is possible, if not possible just remove it from the config as is.
 
 //IDEAS: 
 
@@ -212,10 +218,12 @@ void onNewPlayerJoin( CRules@ this, CPlayer@ player )
     ConfigFile cfg();
     if (cfg.loadFile("../Cache/CommandChatConfig.cfg"))
     {
-        bool _hidecom;
+        bool _hidecom = false;
         
-        _hidecom = cfg.read_bool(player.getUsername() + "_hidecom");
-        
+        if(cfg.exists(player.getUsername() + "_hidecom"))
+        {
+            _hidecom = cfg.read_bool(player.getUsername() + "_hidecom");
+        }
         this.set_bool(player.getUsername() + "_hidecom", _hidecom);
     }
     //Stored value init end
