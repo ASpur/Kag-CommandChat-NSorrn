@@ -66,7 +66,7 @@ class CommandBase : ICommand
         blob_must_exist = true;
         minimum_parameter_count = 0;
     }
-    //What the command does. Happens as long as all the other checks went through.
+    //What the command does. This happens as long as all the other checks went through.
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob)
     {
         error("COMMANDCODE METHOD NOT FOUND!");
