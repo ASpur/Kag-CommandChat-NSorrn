@@ -370,8 +370,10 @@ class FishySchool : CommandBase
         {
             names[0] = "fishyschool".getHash();
         }
-        permlevel = pModerator;
+        permlevel = pAdmin;
         commandtype = Legacy;
+
+        active = false;//Disabled as this is an easy way to cause massive amounts of lag.
     }
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
