@@ -319,19 +319,31 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
 
     
     //Spawn anything
-    if(command == null && (sv_test || getSecurity().checkAccess_Command(player, "admin_color")))//If this isn't a command and either sv_test is on or the player is an admin.
+    if(command == null)//If this isn't a command.
     {
-        if(ChatCommandCoolDown)
+        if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color"))//If sv_test is not true and the player does not have admin color
         {
-            u16 lastChatTime;
-            if(player_last_sent.get(""+ player.getNetworkID(), lastChatTime)){}
-            else { lastChatTime = 0; }
-
-            if(getGameTime() < lastChatTime)
+            //Inform the player about not having permissions?
+            return !this.get_bool(player.getUsername() + "_hidecom");
+        }
+        
+        if(ChatCommandCoolDown)//If ChatCommandCoolDown is true
+        {
+            u16 lastChatTime;//Make a variable to store the last time this player used a chatcommand successfully
+            if(!player_last_sent.get(""+ player.getNetworkID(), lastChatTime))//If the player's last sent command was not found in the dictionary
             {
-                sendClientMessage(this, player, "Command is still under cooldown for " + Maths::Round(float(lastChatTime - getGameTime()) / 30.0f)  + " Seconds");
+                lastChatTime = 0;//Set lastChatTime to 0.
+            }
+
+            if(getGameTime() < lastChatTime && lastChatTime != 0)//Do the code within if the lastChatTime is more than getGameTime(). (and it isn't equal to 0 i.e never used.)
+            {
+                float time_left_in_seconds = Maths::Round(float(lastChatTime - getGameTime()) / 30.0f);
+
+                sendClientMessage(this, player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
+                
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
+            //Only if getGameTime() is bigger than lastChatTime will commands work.
         }
 
         string name = text_in.substr(1, text_in.size());
@@ -344,7 +356,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
             
-            player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);
+            player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);//Set the last sent command time with the delay added.
         }
 
         return !this.get_bool(player.getUsername() + "_hidecom");
@@ -382,15 +394,21 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     //Cooldown check.
     if(ChatCommandCoolDown && !getSecurity().checkAccess_Command(player, "admin_color"))
     {
-        u16 lastChatTime;
-        if(player_last_sent.get(""+ player.getNetworkID(), lastChatTime)){}
-        else { lastChatTime = 0; }
-
-        if(getGameTime() < lastChatTime)
+        u16 lastChatTime;//Make a variable to store the last time this player used a chatcommand successfully
+        if(!player_last_sent.get(""+ player.getNetworkID(), lastChatTime))//If the player's last sent command was not found in the dictionary
         {
-            sendClientMessage(this, player, "Command is still under cooldown for " + Maths::Round(float(lastChatTime - getGameTime()) / 30.0f)  + " Seconds");
+            lastChatTime = 0;//Set lastChatTime to 0.
+        }
+
+        if(getGameTime() < lastChatTime && lastChatTime != 0)//Do the code within if the lastChatTime is more than getGameTime(). (and it isn't equal to 0 i.e never used.)
+        {
+            float time_left_in_seconds = Maths::Round(float(lastChatTime - getGameTime()) / 30.0f);
+
+            sendClientMessage(this, player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
+            
             return !this.get_bool(player.getUsername() + "_hidecom");
         }
+        //Only if getGameTime() is bigger than lastChatTime will commands work.
     }
 
     player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);
