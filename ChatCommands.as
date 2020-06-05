@@ -280,41 +280,14 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     if(!this.get("ChatCommands", commands))
     {
         error("Failed to get ChatCommands.");
+        return false;
+    }
+     
+    if(!getCommandByTokens(tokens, commands, player, command))
+    {
         return !this.get_bool(player.getUsername() + "_hidecom");
     }
 
-    int token0Hash = tokens[0].getHash();
-
-    for(u16 p = 0; p < commands.size(); p++)
-    {
-        commands[p].RefreshVars();
-        commands[p].Setup(tokens);
-        array<int> _names = commands[p].getNames(); 
-        if(_names.size() == 0)
-        {
-            error("A command did not have a name to go by. Please add a name to this command");
-            return false;
-        }
-        for(u16 name = 0; name < _names.size(); name++)
-        {
-            if(_names[name] == token0Hash)
-            {
-                if(!commands[p].isActive() && !getSecurity().checkAccess_Command(player, "ALL"))//If the command is not active and the player isn't a superadmin
-                {
-                    sendClientMessage(this, player, "This command is not active.");
-                    return !this.get_bool(player.getUsername() + "_hidecom");
-                }
-                //print("token length = " + tokens.size());
-                @command = @commands[p];
-                break;
-            }
-        }
-        if(command != null)
-        {
-            break;
-        }
-    }
-    
     this.set("ChatCommands", commands);
 
     
@@ -324,6 +297,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color"))//If sv_test is not true and the player does not have admin color
         {
             //Inform the player about not having permissions?
+            sendClientMessage(player, "You don't have permissions to spawn a blob. You may of misspelled a command");
             return !this.get_bool(player.getUsername() + "_hidecom");
         }
         
@@ -339,7 +313,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             {
                 float time_left_in_seconds = Maths::Round(float(lastChatTime - getGameTime()) / 30.0f);
 
-                sendClientMessage(this, player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
+                sendClientMessage(player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
                 
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
@@ -352,7 +326,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             CBlob@ created_blob = server_CreateBlob(name, team, pos);
             if(created_blob.getName() == "")
             {
-                sendClientMessage(this, player, "Failed to spawn " + name);
+                sendClientMessage(player, "Failed to spawn " + name);
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
             
@@ -404,7 +378,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         {
             float time_left_in_seconds = Maths::Round(float(lastChatTime - getGameTime()) / 30.0f);
 
-            sendClientMessage(this, player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
+            sendClientMessage(player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
             
             return !this.get_bool(player.getUsername() + "_hidecom");
         }

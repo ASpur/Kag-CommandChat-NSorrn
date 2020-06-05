@@ -83,7 +83,7 @@ class CommandBase : ICommand
         {
             if(blob == null)
             {
-                sendClientMessage(rules, player, "Your blob appears to be null, this command will not work unless your blob actually exists.");
+                sendClientMessage(player, "Your blob appears to be null, this command will not work unless your blob actually exists.");
                 return false;
             }
         }
@@ -103,35 +103,35 @@ class CommandBase : ICommand
         //Security check.
         if(permlevel == pModerator && !player.isMod() && !_sv_test)
         {
-            sendClientMessage(rules, player, "You must be a moderator or higher to use this command.");
+            sendClientMessage(player, "You must be a moderator or higher to use this command.");
             return false;
         }
         if(permlevel == pAdmin && !security.checkAccess_Command(player, "admin_color") && !_sv_test)
         {
-            sendClientMessage(rules, player, "You must be a admin or higher to use this command.");
+            sendClientMessage(player, "You must be a admin or higher to use this command.");
             return false;
         }
         if(permlevel == pSuperAdmin && !security.checkAccess_Command(player, "ALL") && !_sv_test)
         {
-            sendClientMessage(rules, player, "You must be a superadmin to use this command.");
+            sendClientMessage(player, "You must be a superadmin to use this command.");
             return false;
         }
         if(permlevel == pFreeze && (!security.checkAccess_Command(player, "freezeid") || !getSecurity().checkAccess_Command(player, "unfreezeid")))
         {
-            sendClientMessage(rules, player, "You do not sufficient permissions to freeze and unfreeze a player.");
+            sendClientMessage(player, "You do not sufficient permissions to freeze and unfreeze a player.");
             return false;
         }
         if(permlevel == pKick && !security.checkAccess_Command(player, "kick"))
         {
-            sendClientMessage(rules, player, "You do not sufficient permissions to kick a player.");
+            sendClientMessage(player, "You do not sufficient permissions to kick a player.");
             return false;
         }
         if(permlevel == pUnban && !security.checkAccess_Command(player, "unban")){
-            sendClientMessage(rules, player, "You do not sufficient permissions to unban a player.");
+            sendClientMessage(player, "You do not sufficient permissions to unban a player.");
             return false;
         }
         if(permlevel == pBan && !security.checkAccess_Command(player, "ban")){
-            sendClientMessage(rules, player, "You do not sufficient permissions to ban a player.");
+            sendClientMessage(player, "You do not sufficient permissions to ban a player.");
             return false;
         }
 
@@ -140,7 +140,7 @@ class CommandBase : ICommand
         //Minimum parameter check
         if(tokens.size() < minimum_parameter_count + 1)
         {
-            sendClientMessage(rules, player, "This command requires at least " + minimum_parameter_count + " parameters.");
+            sendClientMessage(player, "This command requires at least " + minimum_parameter_count + " parameters.");
             return false;
         }
 
@@ -227,8 +227,10 @@ enum PermissionLevel//For what you need to use what command.
 
 
 //Rules, what player the command is being sent to, what is the message?
-void sendClientMessage(CRules@ this, CPlayer@ player, string message)
+void sendClientMessage(CPlayer@ player, string message)
 {
+    CRules@ rules = getRules();
+
 	CBitStream params;//Assign the params
 	params.write_string(message);
     params.write_u8(255);
@@ -236,10 +238,12 @@ void sendClientMessage(CRules@ this, CPlayer@ player, string message)
     params.write_u8(0);
     params.write_u8(0);
 
-	this.SendCommand(this.getCommandID("clientmessage"), params, player);
+	rules.SendCommand(rules.getCommandID("clientmessage"), params, player);
 }
-void sendClientMessage(CRules@ this, CPlayer@ player, string message, SColor color)//Now with color
+void sendClientMessage(CPlayer@ player, string message, SColor color)//Now with color
 {
+    CRules@ rules = getRules();
+
 	CBitStream params;//Assign the params
 	params.write_string(message);
     params.write_u8(color.getAlpha());
@@ -247,7 +251,7 @@ void sendClientMessage(CRules@ this, CPlayer@ player, string message, SColor col
     params.write_u8(color.getGreen());
     params.write_u8(color.getBlue());
 
-	this.SendCommand(this.getCommandID("clientmessage"), params, player);
+	rules.SendCommand(rules.getCommandID("clientmessage"), params, player);
 }
 
 //Get an array of players that have "shortname" at the start of their username. If their username is exactly the same, it will return an array containing only that player.
@@ -484,7 +488,7 @@ bool getAndAssignTargets(CRules@ this, CPlayer@ player, string[]@ tokens, u8 tar
 {
     if(tokens.length <= target_player_slot)
     {
-        sendClientMessage(this, player, "You must specify the player on param " + target_player_slot);
+        sendClientMessage(player, "You must specify the player on param " + target_player_slot);
         return false;
     }
 
@@ -496,12 +500,12 @@ bool getAndAssignTargets(CRules@ this, CPlayer@ player, string[]@ tokens, u8 tar
         {
             playernames += " : " + target_players[i].getUsername();// put their name in a string
         }
-        sendClientMessage(this, player, "There is more than one possible player" + playernames);//tell the client that these players in the string were found
+        sendClientMessage(player, "There is more than one possible player" + playernames);//tell the client that these players in the string were found
         return false;//don't send the message to chat, don't do anything else
     }
     else if(target_players == null || target_players.length == 0)
     {
-        sendClientMessage(this, player, "No players were found from " + tokens[target_player_slot]);
+        sendClientMessage(player, "No players were found from " + tokens[target_player_slot]);
         return false;
     }
 
@@ -514,7 +518,7 @@ bool getAndAssignTargets(CRules@ this, CPlayer@ player, string[]@ tokens, u8 tar
         {
             if(target_player.getBlob() == null)
             {
-                sendClientMessage(this, player, "This player does not yet have a blob.");
+                sendClientMessage(player, "This player does not yet have a blob.");
                 return false;
             }
             @target_blob = @target_player.getBlob();
@@ -522,7 +526,7 @@ bool getAndAssignTargets(CRules@ this, CPlayer@ player, string[]@ tokens, u8 tar
     }
     else
     {
-        sendClientMessage(this, player, "player " + tokens[target_player_slot] + " not found");
+        sendClientMessage(player, "player " + tokens[target_player_slot] + " not found");
         return false;
     }
 
@@ -545,6 +549,50 @@ bool getBool(string input_string, bool &out bool_value)
     bool_value = false;
 
     return false;
+}
+
+bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ player, ICommand@ &out command)
+{
+    CRules@ rules = getRules();
+
+    int token0Hash = tokens[0].getHash();//Get the hash for the first token (the command name)
+    
+    bool found_command = false;
+
+    //For every command
+    for(u16 p = 0; p < commands.size(); p++)
+    {
+        commands[p].RefreshVars();//Refersh vars command variables stay even after the command is finished being used. This is called to set them all to default.
+        
+        commands[p].Setup(tokens);//Setup permissions required to use the command. the permissions can vary based on the tokens.
+        
+        array<int> _names = commands[p].getNames();//Gets all the names that this command has.
+        
+        if(_names.size() == 0)//If this command does not have a single name.
+        {
+            string errormessage = "Command " + p + " did not have a name to go by. Please add a name to this command"; 
+            error(errormessage);
+            sendClientMessage(player, errormessage);
+            return false;//Error and stop.
+        }
+        
+        for(u16 name = 0; name < _names.size(); name++)//Per each name
+        {
+            if(_names[name] == token0Hash)//If this name is equal to the first token. Both values are hashes
+            {   //The desired command is now known
+                if(!commands[p].isActive() && !getSecurity().checkAccess_Command(player, "ALL"))//If the command is not active and the player isn't a superadmin
+                {
+                    sendClientMessage(player, "This command is not active.");
+                    return false;
+                }
+                //print("token length = " + tokens.size());
+                @command = @commands[p];
+                return true;
+            }
+        }
+    }
+
+    return true;
 }
 
 /*CPlayer@ findNearestPlayer(bool skipclosest, Vec2f point, f32 radius)

@@ -430,7 +430,7 @@ class Crate : CommandBase
         }
         else
         {
-            sendClientMessage(rules, player, "usage: !crate BLOBNAME [DESCRIPTION]"); //e.g., !crate shark Your Little Darling
+            sendClientMessage(player, "usage: !crate BLOBNAME [DESCRIPTION]"); //e.g., !crate shark Your Little Darling
             server_MakeCrate("", "", 0, team, Vec2f(pos.x, pos.y - 30.0f));
         }
 
@@ -480,7 +480,7 @@ class Test : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        sendClientMessage(rules, player, "You just used the test command.");//This method sends a message to the specified player. the "player" variable is the player that used the !test command.
+        sendClientMessage(player, "You just used the test command.");//This method sends a message to the specified player. the "player" variable is the player that used the !test command.
 
         if(tokens.length > 1)//If there is more than a single token. The first token is command itself, and the second token is the number in this case.
         {
@@ -488,17 +488,17 @@ class Test : CommandBase
 
             u8 number = parseInt(string_number);//We take the very first parameter and turn it into an int variable with the name "number".
             
-            sendClientMessage(rules, player, "There is a parameter specified. The first parameter is: " + number);//Message the player that sent this command this.
+            sendClientMessage(player, "There is a parameter specified. The first parameter is: " + number);//Message the player that sent this command this.
 
             if (tokens.length > 2)//If there are more than two tokens. The first token is the command itself, the second is the number, the third is the specified player.
             {
-                sendClientMessage(rules, player, "There are two parameters specified, the second parameter is: " + tokens[2], SColor(255, 0, 0, 153));//This time we specify a color.
+                sendClientMessage(player, "There are two parameters specified, the second parameter is: " + tokens[2], SColor(255, 0, 0, 153));//This time we specify a color.
             
                 //Tip, you do not need to check if the target_player or target_blob exist, that is already handled by something else.
 
                 target_blob.server_setTeamNum(number);//As we specified the target_player_blob_param = true; when there are more than two tokens, we have the blob of the target_player right here.
 
-                sendClientMessage(rules, target_player, "Your team has been changed to " + number + " by " + player.getUsername() + " who is on team " + team);//This sends a message to the target_player
+                sendClientMessage(target_player, "Your team has been changed to " + number + " by " + player.getUsername() + " who is on team " + team);//This sends a message to the target_player
             }
 
             //If there is only 1 parameter (2 tokens) do this.
@@ -556,11 +556,11 @@ class HeldBlobNetID : CommandBase
         CBlob@ held_blob = blob.getCarriedBlob();
         if(held_blob != null)
         {
-            sendClientMessage(rules, player, "NetID: " + held_blob.getNetworkID());
+            sendClientMessage(player, "NetID: " + held_blob.getNetworkID());
         }
         else
         {
-            sendClientMessage(rules, player, "Held blob not found.");
+            sendClientMessage(player, "Held blob not found.");
         }
 
         return true;
@@ -591,11 +591,11 @@ class PlayerNetID : CommandBase
     {
         if(tokens.length > 1)
         {
-            sendClientMessage(rules, player, "NetID: " + target_player.getNetworkID());
+            sendClientMessage(player, "NetID: " + target_player.getNetworkID());
         }
         else
         {
-            sendClientMessage(rules, player, "NetID: " + player.getNetworkID());
+            sendClientMessage(player, "NetID: " + player.getNetworkID());
         }
 
         return true;
@@ -626,11 +626,11 @@ class PlayerBlobNetID : CommandBase
     {
         if(tokens.length > 1)
         {
-            sendClientMessage(rules, player, "NetID: " + target_blob.getNetworkID());
+            sendClientMessage(player, "NetID: " + target_blob.getNetworkID());
         }
         else
         {
-            sendClientMessage(rules, player, "NetID: " + blob.getNetworkID());
+            sendClientMessage(player, "NetID: " + blob.getNetworkID());
         }
 
         return true;
@@ -654,10 +654,10 @@ class PlayerCount : CommandBase
     {
         uint16 playercount = getPlayerCount();
         if(playercount > 1) {
-            sendClientMessage(rules, player, "There are " + getPlayerCount() + " Players here.");
+            sendClientMessage(player, "There are " + getPlayerCount() + " Players here.");
         }
         else {
-            sendClientMessage(rules, player, "It's just you.");
+            sendClientMessage(player, "It's just you.");
         }
 
         return true;
@@ -756,7 +756,7 @@ class TagPlayerBlob : CommandBase
 
         if(message != "")
         {
-            sendClientMessage(rules, player, message);
+            sendClientMessage(player, message);
         }
 
         return true;
@@ -814,7 +814,7 @@ class TagBlob : CommandBase
 
         if(message != "")
         {
-            sendClientMessage(rules, player, message);
+            sendClientMessage(player, message);
         }
 
         return true;
@@ -843,12 +843,12 @@ class HideCommands : CommandBase
         bool hidecom = false;
         if(rules.get_bool(player.getUsername() + "_hidecom") == false)
         {
-            sendClientMessage(rules, player, "Commands hidden");
+            sendClientMessage(player, "Commands hidden");
             hidecom = true;
         }
         else
         {
-            sendClientMessage(rules, player, "Commands unhidden");
+            sendClientMessage(player, "Commands unhidden");
         }
         
         ConfigFile cfg();
@@ -948,11 +948,11 @@ class GiveCoin : CommandBase
         {
             player.server_setCoins(player.getCoins() - coins);
             target_player.server_setCoins(target_player.getCoins() + coins);
-            sendClientMessage(rules, player, "You gave " + coins + " Coins To " + target_player.getCharacterName());
+            sendClientMessage(player, "You gave " + coins + " Coins To " + target_player.getCharacterName());
         }
         else
         {
-            sendClientMessage(rules, player, "You don't have enough coins");
+            sendClientMessage(player, "You don't have enough coins");
             return false;
         }
 
@@ -988,8 +988,8 @@ class PrivateMessage : CommandBase
         }
         if(message != "")
         {
-            sendClientMessage(rules, target_player, messagefrom + message, SColor(255, 0, 0, 153));
-            sendClientMessage(rules, player, "Your message \" " + message + "\"has been sent");
+            sendClientMessage(target_player, messagefrom + message, SColor(255, 0, 0, 153));
+            sendClientMessage(player, "Your message \" " + message + "\"has been sent");
             return false;
         }
 
@@ -1020,7 +1020,7 @@ class Ban : CommandBase
         CSecurity@ security = getSecurity();
         if(security.checkAccess_Feature(target_player, "ban_immunity"))
         {
-            sendClientMessage(rules, player, "rules player has ban immunity");//Check for kick immunity    
+            sendClientMessage(player, "rules player has ban immunity");//Check for kick immunity    
             return false;
         }
         uint32 ban_length = 60;
@@ -1029,7 +1029,7 @@ class Ban : CommandBase
             ban_length = parseInt(tokens[2]);
         }
         security.ban(target_player, ban_length);
-        sendClientMessage(rules, player, "Player " + target_player.getUsername() + " has been banned for " + ban_length + " minutes");//Check for ban immunity
+        sendClientMessage(player, "Player " + target_player.getUsername() + " has been banned for " + ban_length + " minutes");//Check for ban immunity
 
         return true;
     }
@@ -1057,11 +1057,11 @@ class Unban : CommandBase
         /*if(security.isPlayerBanned(tokens[1]))
         {*/
             security.unBan(tokens[1]);
-            sendClientMessage(rules, player, "Player " + tokens[1] + " has been unbanned");
+            sendClientMessage(player, "Player " + tokens[1] + " has been unbanned");
         /*}
         else
         {
-            sendClientMessage(rules, player, "Specified banned player not found, i.e nobody with this username is banned");
+            sendClientMessage(player, "Specified banned player not found, i.e nobody with this username is banned");
         }*///Fix me later numan
 
         return true;
@@ -1090,11 +1090,11 @@ class Kick : CommandBase
     {
         if(getSecurity().checkAccess_Feature(target_player, "kick_immunity"))
         {
-            sendClientMessage(rules, player, "rules player has kick immunity");//Check for kick immunity    
+            sendClientMessage(player, "rules player has kick immunity");//Check for kick immunity    
             return false;
         }
         KickPlayer(target_player);
-        sendClientMessage(rules, player, "Player " + tokens[1] + " has been kicked");//Check for kick immunity
+        sendClientMessage(player, "Player " + tokens[1] + " has been kicked");//Check for kick immunity
 
         return true;
     }
@@ -1121,7 +1121,7 @@ class Freeze : CommandBase
     {
         if(getSecurity().checkAccess_Feature(target_player, "freeze_immunity"))
         {
-            sendClientMessage(rules, player, "This player has freeze immunity");//Check for kick immunity    
+            sendClientMessage(player, "This player has freeze immunity");//Check for kick immunity    
             return false;
         }
         target_player.freeze = !target_player.freeze;
@@ -1190,7 +1190,7 @@ class Team : CommandBase
     {
         if(tokens.length == 1)
         {
-            sendClientMessage(rules, player, "Your controlled blob's team is " + blob.getTeamNum());
+            sendClientMessage(player, "Your controlled blob's team is " + blob.getTeamNum());
             return false;
         }
 
@@ -1200,7 +1200,7 @@ class Team : CommandBase
         {
             if(tokens[1] == "get")//If the first param is "get"
             {//Find that player's blob's team.
-                sendClientMessage(rules, player, "This player's controlled blob's team is " + target_blob.getTeamNum()); 
+                sendClientMessage(player, "This player's controlled blob's team is " + target_blob.getTeamNum()); 
             }
             else
             {
@@ -1249,7 +1249,7 @@ class PlayerTeam : CommandBase
     {
         if(tokens.length == 1)
         {
-            sendClientMessage(rules, player, "Your player team is " + player.getTeamNum());
+            sendClientMessage(player, "Your player team is " + player.getTeamNum());
             return false;
         }
 
@@ -1260,7 +1260,7 @@ class PlayerTeam : CommandBase
         { 	
             if(tokens[1] == "get")//If the first param is "get"
             {//Find that player's blob's team.
-                sendClientMessage(rules, player, "This player's team is " + target_player.getTeamNum()); 
+                sendClientMessage(player, "This player's team is " + target_player.getTeamNum()); 
             }
             else
             {
@@ -1339,7 +1339,7 @@ class Teleport : CommandBase
         {
             //if(target_player.isBot())
             //{
-            //    sendClientMessage(rules, player, "You can not teleport a bot.");
+            //    sendClientMessage(player, "You can not teleport a bot.");
             //    return false;
             //}
             
@@ -1351,12 +1351,12 @@ class Teleport : CommandBase
                 {
                     playernames += " : " + target_players[i].getUsername();// put their name in a string
                 }
-                sendClientMessage(rules, player, "There is more than one possible player for the second player param" + playernames);//tell the client that these players in the string were found
+                sendClientMessage(player, "There is more than one possible player for the second player param" + playernames);//tell the client that these players in the string were found
                 return false;//don't send the message to chat, don't do anything else
             }
             else if(target_players == null || target_players.length == 0)
             {
-                sendClientMessage(rules, player, "No player was found for the second player param.");
+                sendClientMessage(player, "No player was found for the second player param.");
                 return false;
             }
 
@@ -1380,14 +1380,14 @@ class Teleport : CommandBase
             }
             else
             {
-                sendClientMessage(rules, player, "The second specified player " + tokens[2] + " was not found");
+                sendClientMessage(player, "The second specified player " + tokens[2] + " was not found");
             }
         }
         else 
         {
             if (blob == null)
             {
-                sendClientMessage(rules, player, "You cannot teleport your blob to this player as you have no blob.");
+                sendClientMessage(player, "You cannot teleport your blob to this player as you have no blob.");
                 return false;
             }
             Vec2f target_pos = target_blob.getPosition();
@@ -1467,7 +1467,7 @@ class Damage : CommandBase
         float damage = parseFloat(tokens[1]);
         if(damage < 0.0)
         {
-            sendClientMessage(rules, player, "You can not apply negative damage");
+            sendClientMessage(player, "You can not apply negative damage");
             return false;
         }
         if (tokens.length > 2)
@@ -1543,7 +1543,7 @@ class Morph : CommandBase
             
         if(target_blob == null)
         {
-            sendClientMessage(rules, player, "Can not respawn while dead, try !forcerespawn \"player\"");
+            sendClientMessage(player, "Can not respawn while dead, try !forcerespawn \"player\"");
             return false;
         }
         CBlob@ newBlob = server_CreateBlob(actor, target_blob.getTeamNum(), target_blob.getPosition());
@@ -1562,7 +1562,7 @@ class Morph : CommandBase
             {
                 newBlob.server_Die();
             }
-            sendClientMessage(rules, player, "Failed to spawn the \"" + actor + "\" blob");
+            sendClientMessage(player, "Failed to spawn the \"" + actor + "\" blob");
         }
 
         return true;
@@ -1631,7 +1631,7 @@ class AddRobot : CommandBase
             {
                 if(blob == null)
                 {
-                    sendClientMessage(rules, player, "Your blob does not exist to let a blob spawn on you.");
+                    sendClientMessage(player, "Your blob does not exist to let a blob spawn on you.");
                     return false;
                 }
                 if(bot_actor == "")
@@ -1867,7 +1867,7 @@ class CommandCount : CommandBase
         array<ICommand@> commands;
         rules.get("ChatCommands", commands);
 
-        sendClientMessage(rules, player, "There are " + commands.size() + " commands");
+        sendClientMessage(player, "There are " + commands.size() + " commands");
         //TODO tell active commands.
         //TODO tell commands that this user can use  (check each one's security)
         return true;
@@ -1981,7 +1981,7 @@ class C_AddScript : CommandBase
         u16 target_netid = 0;
         if(!getBool(tokens[1], relayToClients))
         {
-            sendClientMessage(rules, player, "The second param was expecting either true|1 or false|0. It got neither.");
+            sendClientMessage(player, "The second param was expecting either true|1 or false|0. It got neither.");
             return true;
         }
 
@@ -2005,7 +2005,7 @@ class C_AddScript : CommandBase
             CBlob@ target_blobert = getBlobByNetworkID(target_netid);//I'm not good at naming variables. Apologies to anyone named blobert.
             if(target_blobert == null)
             {
-                sendClientMessage(rules, player, "Could not find the blob associated with the NetID");
+                sendClientMessage(player, "Could not find the blob associated with the NetID");
                 return true;
             }
             else if(target_class == "csprite" || target_class == "sprite")
@@ -2013,7 +2013,7 @@ class C_AddScript : CommandBase
                 CSprite@ target_sprite = target_blobert.getSprite();
                 if(target_sprite == null)
                 {
-                    sendClientMessage(rules, player, "This blob's sprite is null"); return false;
+                    sendClientMessage(player, "This blob's sprite is null"); return false;
                 }
             }
             else if(target_class == "cbrain" || target_class == "brain")
@@ -2021,7 +2021,7 @@ class C_AddScript : CommandBase
                 CBrain@ target_brain = target_blobert.getBrain();
                 if(target_brain == null)
                 {
-                    sendClientMessage(rules, player, "The blob's brain is null"); return false;
+                    sendClientMessage(player, "The blob's brain is null"); return false;
                 }
             }
             else if(target_class == "cshape" || target_class == "shape")
@@ -2029,13 +2029,13 @@ class C_AddScript : CommandBase
                 CShape@ target_shape = target_blobert.getShape();
                 if(target_shape == null)
                 {
-                    sendClientMessage(rules, player, "The blob's shape is null"); return false;
+                    sendClientMessage(player, "The blob's shape is null"); return false;
                 }
             }
         }
         else if (target_netid == 0)
         {
-            sendClientMessage(rules, player, "A NetID is required as the forth parameter");
+            sendClientMessage(player, "A NetID is required as the forth parameter");
             return true;
         }
 
