@@ -35,15 +35,6 @@
 
 //!actor, but don't kill the old blob
 
-//!addscript (true for all clients and server. false for server only) SCRIPT (CLASS) (IDENTIFIER, if needed)
-//not specifying the class defaults to a player's blob
-//!addscript true examplescript.as cblob 125
-//!addscript true examplescript.as the1sad1numanator
-//!addscript true examplescript.as cmap
-//!addscript true examplescript.as csprite 125
-//Remember to return the bool back to the chat to inform if it worked or not.
-
-
 //!gettag 
 //Just like !tagblob but instead getting the value
 
@@ -109,6 +100,7 @@ void onInit(CRules@ this)
     this.addCommandID("announcement");
     this.addCommandID("colorlantern");
     this.addCommandID("addscript");
+    this.addCommandID("enginemessage");	
     //onCommand end
 
     if(!isServer())
@@ -155,7 +147,7 @@ void onInit(CRules@ this)
         ChickenFlock(),
         //New commands are below here.
         HideCommands(),
-        ShowCommands(),
+        ShowCommands(),//Help menu
         PlayerCount(),
         NextMap(),
         SpinEverything(),
@@ -189,6 +181,8 @@ void onInit(CRules@ this)
         ChangeGameState(),
         C_AddScript(),
         BlobNameByID(),
+        Mute(),
+        Unmute(),
         CommandCount()//End*/
     };
 
@@ -250,6 +244,12 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     {
         error("player was somehow null");
 		return true;
+    }
+
+    if(this.get_bool(player.getUsername() + "_muted") == true)//is this player muted?
+    {
+        sendClientMessage(player, "You are muted, the message was not sent.");
+        return false;//Instant nope.
     }
 
 	CBlob@ blob = player.getBlob(); // now, when the code references "blob," it means the player who called the command
@@ -558,6 +558,11 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
                 target_shape.AddScript(script_name);
             }
         }
+    }
+    else if(cmd == this.getCommandID("enginemessage") )
+    {
+		string text = params.read_string();
+        EngineMessage(text);
     }
 }
 

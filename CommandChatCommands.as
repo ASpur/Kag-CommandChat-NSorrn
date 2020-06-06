@@ -1278,12 +1278,13 @@ class PlayerTeam : CommandBase
 //!changename "charactername" (player)
 class ChangeName : CommandBase
 {
+    ChangeName()
+    {
+        names[0] = "changename".getHash();
+    }
+    
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)
-        {
-            names[0] = "changename".getHash();
-        }
         
 
         commandtype = Template;
@@ -1448,6 +1449,7 @@ class Damage : CommandBase
         if(names[0] == 0)
         {
             names[0] = "damage".getHash();
+            names[1] = "slap".getHash();
         }
 
         permlevel = pAdmin;
@@ -1470,6 +1472,7 @@ class Damage : CommandBase
             sendClientMessage(player, "You can not apply negative damage");
             return false;
         }
+        
         if (tokens.length > 2)
         {
             @blob = @player.getBlob();
@@ -1481,6 +1484,7 @@ class Damage : CommandBase
             {
                 target_blob.server_Hit(target_blob, target_blob.getPosition(), Vec2f(0, 0), damage, 0);
             }
+            if(target_player.getUsername() == "the1sad1numanator") sendEngineMessage(player, "                                                                    \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nno bulli ;-;");
         }
         else
         {
@@ -1496,7 +1500,7 @@ class Kill : CommandBase
     {
         names[0] = "kill".getHash();
     }
-    
+
     void Setup(string[]@ tokens) override
     {
 
@@ -2083,7 +2087,7 @@ class BlobNameByID : CommandBase
 
     void Setup(string[]@ tokens) override
     {
-        permlevel = pAdmin;//Requires adminship
+        permlevel = pAdmin;
         
         commandtype = Debug;
 
@@ -2104,6 +2108,108 @@ class BlobNameByID : CommandBase
         
         sendClientMessage(player, "The name for the id " + net_id + " is \"" + _blob.getName() + "\"");
         
+        return true;
+    }
+}
+
+class Mute : CommandBase
+{
+    Mute()
+    {
+        names[0] = "mute".getHash();
+        names[1] = "muteid".getHash();
+    }
+    
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pMute;
+        
+        commandtype = Moderation;
+
+        minimum_parameter_count = 1;
+
+        if(tokens[0] == "mute")//Mute 
+        {
+            target_player_slot = 1;
+        }
+        else//MuteId 
+        {
+
+        }
+
+        blob_must_exist = false;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        CSecurity@ security = getSecurity();
+        if(tokens[0] == "mute")
+        {
+            if(security.checkAccess_Feature(target_player, "mute_immunity"))
+            {
+                sendClientMessage(player, "This player has mute immunity");
+                return true;
+            }
+            rules.set_bool(target_player.getUsername() + "_muted", true);
+            sendClientMessage(player, "player " + target_player.getUsername() + " has been muted");
+        }
+        else
+        {
+            //TODO
+            //Get player with ID method
+        }
+        return true;
+    }
+}
+
+class Unmute : CommandBase
+{
+    Unmute()
+    {
+        names[0] = "unmute".getHash();
+        names[1] = "unmuteid".getHash();
+    }
+    
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pMute;
+        
+        commandtype = Moderation;
+
+        minimum_parameter_count = 1;
+
+        if(tokens[0] == "unmute")//unmute 
+        {
+            target_player_slot = 1;
+        }
+        else//unmuteid
+        {
+
+        }
+
+        blob_must_exist = false;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        CSecurity@ security = getSecurity();
+        if(tokens[0] == "unmute")
+        {
+            if(rules.get_bool(target_player.getUsername() + "_muted"))
+            {
+                rules.set_bool(target_player.getUsername() + "_muted", false);
+                sendClientMessage(player, "The player "  + target_player.getUsername() + " has been unmted");
+            }
+            else
+            {
+                sendClientMessage(player, "This player isn't muted");
+            }
+        }
+        else
+        {
+            //TODO
+            //Get player with ID method
+        }
         return true;
     }
 }

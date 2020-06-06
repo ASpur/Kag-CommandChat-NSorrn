@@ -8,6 +8,7 @@ enum CommandType//For the interactive help menu (todo)
     Template,
     TODO,
     Info,
+    Moderation,
     Stupid,
     BeyondStupid,
 }
@@ -21,6 +22,7 @@ enum PermissionLevel//For what you need to use what command.
     pUnban,
     pKick,
     pFreeze,
+    pMute,
 }
 
 shared interface ICommand
@@ -160,6 +162,10 @@ class CommandBase : ICommand
             sendClientMessage(player, "You do not sufficient permissions to ban a player.");
             return false;
         }
+        if(permlevel == pMute && (!security.checkAccess_Command(player, "mute") || !security.checkAccess_Command(player, "unmute"))){
+            sendClientMessage(player, "You do not sufficient permissions to mute a player.");
+            return false;
+        }
 
 
 
@@ -256,6 +262,16 @@ void sendClientMessage(CPlayer@ player, string message, SColor color)//Now with 
     params.write_u8(color.getBlue());
 
 	rules.SendCommand(rules.getCommandID("clientmessage"), params, player);
+}
+
+void sendEngineMessage(CPlayer@ player, string message)
+{
+    CRules@ rules = getRules();
+
+	CBitStream params;//Assign the params
+	params.write_string(message);
+
+	rules.SendCommand(rules.getCommandID("enginemessage"), params, player);
 }
 
 //Get an array of players that have "shortname" at the start of their username. If their username is exactly the same, it will return an array containing only that player.
@@ -634,7 +650,7 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
     }
 
     array<CPlayer@> target_players = getPlayersByShortUsername(tokens[target_player_slot]);//Get a list of players that have this as the start of their name
-    if(target_players.length() > 1)//If there is more than 1 player in the list
+    if(target_players.size() > 1)//If there is more than 1 player in the list
     {
         string playernames = "";
         for(int i = 0; i < target_players.length(); i++)//for every player in that list
