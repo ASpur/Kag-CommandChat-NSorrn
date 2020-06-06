@@ -52,10 +52,6 @@
 
 //!killall blobname - Kills all of a single blob
 
-//Super admin can disable or enable certain commands.
-
-//Blacklisted blobs
-
 //!radiusmessage {radius} {content
 
 //!tp (insert location) i.e |red spawn| |blue spawn| |void(y9999)| |etc|
@@ -66,8 +62,6 @@
 
 //!getidvec "netid" - Sends to chat where the blob is. The Vector.
 
-//Custom roles.
-
 //!foreverbunnify "username"
 //Saves something in a config that a person is bunnified.
 //Any time the user with that username joins, it mutes them and turns them into a bunny
@@ -76,11 +70,22 @@
 //!unbunnify "username"
 //Note, do not use target_player. Get the username if it is possible, if not possible just remove it from the config as is.
 
+//!gethoveroverblobid or !gethoverid
+//Prints to chat the netid of the thing your mouse is hovering over
+//Use commands.
+
 //IDEAS: 
 
 //Seperate server only and client only command arrays.
 
 //Command that draws NetID of moused over blob.
+
+//Super admin can disable or enable certain commands.
+
+//Blacklisted blobs
+
+//Custom roles.
+
 
 #include "MakeSeed.as";
 #include "MakeCrate.as";
@@ -650,6 +655,7 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 		CBlob@[] all;
 		getBlobs(@all);
 
+        print("client debug");
 		for (u32 i = 0; i < all.length; i++)
 		{
 			CBlob@ blob = all[i];

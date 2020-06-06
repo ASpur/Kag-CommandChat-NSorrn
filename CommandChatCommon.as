@@ -43,10 +43,12 @@ shared interface ICommand
 
 class CommandBase : ICommand
 {
+    
     //Happens only once when the command is first created.
     CommandBase()
     {
-        
+        //Commented out as I'm too lazy to add constructors to all the classes myself.
+        //error("Command missing constructor");    
     }
 
     //Happens every time someone sends a message with ! as the first character. This is done as commands may differ depending on the amount of parameters given.
@@ -596,14 +598,15 @@ bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ pl
 //Returning false means something happened.
 bool DebugCommand(ICommand@ command, bool debug_messages)//if debug_messages is true, stuff will print to console.
 {
+    string errormessage;
+
     if(command == null)
     {
-        string errormessage = "Command was null";
+        errormessage = "Command was null";
         error(errormessage);
         return false;
     }
 
-    string errormessage;
     if(debug_messages)
     {
         print("command.isActive() = " + command.isActive() + "\n");
