@@ -551,7 +551,7 @@ bool getBool(string input_string, bool &out bool_value)
     return false;
 }
 
-bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ player, ICommand@ &out command)
+bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ player, ICommand@ &out command)//Do not use null checks with the variable command. It is always not null for angelscript reasons.
 {
     CRules@ rules = getRules();
 
@@ -566,21 +566,19 @@ bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ pl
         
         commands[p].Setup(tokens);//Setup permissions required to use the command. the permissions can vary based on the tokens.
         
-        array<int> _names = commands[p].getNames();//Gets all the names that this command has.
-        
-        if(_names.size() == 0)//If this command does not have a single name.
+        if(!DebugCommand(commands[p], false))
         {
-            string errormessage = "Command " + p + " did not have a name to go by. Please add a name to this command"; 
-            error(errormessage);
-            sendClientMessage(player, errormessage);
-            return false;//Error and stop.
+            print("DebugCommand returned false on command " + p);
+            return false;
         }
+
+        array<int> _names = commands[p].getNames();//Gets all the names that this command has.
         
         for(u16 name = 0; name < _names.size(); name++)//Per each name
         {
             if(_names[name] == token0Hash)//If this name is equal to the first token. Both values are hashes
             {   //The desired command is now known
-                if(!commands[p].isActive() && !getSecurity().checkAccess_Command(player, "ALL"))//If the command is not active and the player isn't a superadmin
+                if(!commands[p].isActive() && !getSecurity().checkAccess_Command(player, "ALL"))//If the command is not active (if the player is a superadmin, they can use the command anyway.)
                 {
                     sendClientMessage(player, "This command is not active.");
                     return false;
@@ -590,6 +588,56 @@ bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ pl
                 return true;
             }
         }
+    }
+
+    return true;
+}
+
+//Returning false means something happened.
+bool DebugCommand(ICommand@ command, bool debug_messages)//if debug_messages is true, stuff will print to console.
+{
+    if(command == null)
+    {
+        string errormessage = "Command was null";
+        error(errormessage);
+        return false;
+    }
+
+    string errormessage;
+    if(debug_messages)
+    {
+        print("command.isActive() = " + command.isActive() + "\n");
+
+        print("command.inGamemode() = " + command.inGamemode() + "\n");
+
+        array<int> names = command.getNames();
+
+        for(u16 i = 0; i < names.size(); i++)
+        {
+            print("command.getNames()[" + i + "] = " + names[i] + "\n");
+        }
+        
+        print("command.getPermLevel() = " + command.getPermLevel() + "\n");
+
+        print("command.getCommandType() = " + command.getCommandType() + "\n");
+        
+        print("command.getTargetPlayerSlot() = " + command.getTargetPlayerSlot() + "\n");
+        
+        print("command.getTargetPlayerBlobParam() = " + command.getTargetPlayerBlobParam() + "\n");
+
+        print("command.getNoSvTest() = " + command.getNoSvTest() + "\n");
+
+        print("command.getBlobMustExist() = " + command.getBlobMustExist() + "\n");
+
+        print("command.getMinimumParameterCount() = " + command.getMinimumParameterCount() + "\n");
+    }
+
+    
+    if(command.getNames().size() == 0)//If this command does not have a single name.
+    {
+        string errormessage = "Command did not have a name to go by. Please add a name to this command";
+        error(errormessage);
+        return false;
     }
 
     return true;

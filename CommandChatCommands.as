@@ -1952,8 +1952,8 @@ class C_AddScript : CommandBase
 {
     C_AddScript()
     {
-        names[0] = "addscript".getHash();
-        names[1] = "addscriptp".getHash();
+        names[0] = "addscript".getHash();//Regular command
+        names[1] = "addscriptp".getHash();//Using this activates the optional addscript.
     }
     
     void Setup(string[]@ tokens) override
@@ -1966,7 +1966,7 @@ class C_AddScript : CommandBase
         commandtype = Template;
 
         minimum_parameter_count = 3;
-        if(tokens[0] == "addscriptp")
+        if(tokens[0] == "addscriptp")//Optional player addscript active
         {
             target_player_slot = 3;
             target_player_blob_param = true;
