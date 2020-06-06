@@ -558,8 +558,6 @@ bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ pl
     CRules@ rules = getRules();
 
     int token0Hash = tokens[0].getHash();//Get the hash for the first token (the command name)
-    
-    bool found_command = false;
 
     //For every command
     for(u16 p = 0; p < commands.size(); p++)
