@@ -1471,8 +1471,16 @@ class Damage : CommandBase
             return false;
         }
         if (tokens.length > 2)
-        { 
-            target_blob.server_Hit(target_blob, target_blob.getPosition(), Vec2f(0, 0), damage, 0);
+        {
+            @blob = @player.getBlob();
+            if(blob != null && blob.getTeamNum() != target_blob.getTeamNum())
+            {
+                blob.server_Hit(target_blob, target_blob.getPosition(), Vec2f(0, 0), damage, 0);
+            }
+            else
+            {
+                target_blob.server_Hit(target_blob, target_blob.getPosition(), Vec2f(0, 0), damage, 0);
+            }
         }
         else
         {
@@ -1484,12 +1492,13 @@ class Damage : CommandBase
 //!kill "player" - Destroys a player's blob. No refunds.
 class Kill : CommandBase
 {
+    Kill()
+    {
+        names[0] = "kill".getHash();
+    }
+    
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)
-        {
-            names[0] = "kill".getHash();
-        }
 
         permlevel = pAdmin;
         blob_must_exist = false;
@@ -1502,8 +1511,19 @@ class Kill : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        target_blob.server_Die();
+        //target_blob.server_Die();
+        target_blob.server_SetTimeToDie(1.0f);
+        
+        @blob = @player.getBlob();
 
+        if(blob != null && blob.getTeamNum() != target_blob.getTeamNum())
+        {
+            blob.server_Hit(target_blob, Vec2f_zero, Vec2f_zero, 999999999.0f, 0);
+        }
+        else
+        {
+            target_blob.server_Hit(target_blob, Vec2f_zero, Vec2f_zero, 999999999.0f, 0);
+        }
         return true;
     }
 }
@@ -2048,6 +2068,42 @@ class C_AddScript : CommandBase
         rules.SendCommand(rules.getCommandID("addscript"), params, relayToClients);
 
 
+        return true;
+    }
+}
+
+//!blobname {netid}
+class BlobNameByID : CommandBase
+{
+    BlobNameByID()
+    {
+        names[0] = "blobname".getHash();
+        names[1] = "blobnamebyid".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pAdmin;//Requires adminship
+        
+        commandtype = Debug;
+
+        minimum_parameter_count = 1;
+
+        blob_must_exist = false;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        u16 net_id = parseInt(tokens[1]);
+        CBlob@ _blob = getBlobByNetworkID(net_id);
+        if(_blob == null)
+        {
+            sendClientMessage(player, "Failed to find a blob for the id " + net_id);
+            return true;
+        }
+        
+        sendClientMessage(player, "The name for the id " + net_id + " is \"" + _blob.getName() + "\"");
+        
         return true;
     }
 }

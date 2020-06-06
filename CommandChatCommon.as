@@ -1,4 +1,28 @@
 //Zable was a great help with finding problems and suggesting features.
+
+enum CommandType//For the interactive help menu (todo)
+{
+    Debug = 1,
+    Testing,
+    Legacy,
+    Template,
+    TODO,
+    Info,
+    Stupid,
+    BeyondStupid,
+}
+
+enum PermissionLevel//For what you need to use what command.
+{
+    pModerator = 1,
+    pAdmin,
+    pSuperAdmin,
+    pBan,
+    pUnban,
+    pKick,
+    pFreeze,
+}
+
 shared interface ICommand
 {
     void Setup(string[]@ tokens);
@@ -190,28 +214,6 @@ class CommandBase : ICommand
     void setMinimumParameterCount(u8 value) { minimum_parameter_count = value; }
 }
 
-enum CommandType//For the interactive help menu (todo)
-{
-    Debug = 1,
-    Testing,
-    Legacy,
-    Template,
-    TODO,
-    Info,
-}
-
-enum PermissionLevel//For what you need to use what command.
-{
-    pModerator = 1,
-    pAdmin,
-    pSuperAdmin,
-    pBan,
-    pUnban,
-    pKick,
-    pFreeze,
-}
-
-
 
 
 
@@ -393,39 +395,121 @@ string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string i
 
 //When getting blobs, returns netid's
 //When getting players, returns usernames
-string atFindAndReplace(Vec2f point, string text_in)
+string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool skip_unactive_and_inventory = true)
 {
     string text_out;
+    
     string[]@ tokens = text_in.split(" ");
-    for(u16 q = 0; q < tokens.length(); q++)
+    
+    array<CPlayer@> target_players();
+
+    array<CBlob@> target_blobs();
+
+    s8 skip_count = 0;
+    if(skip_one)
     {
-        if(tokens[q].substr(0,1) == "@")
+        skip_count = 1;
+    }
+
+    u16 replaced_tokens = 0;
+
+    u16 old_replaced_tokens = replaced_tokens;
+
+    for(u16 q = 0; q < tokens.size(); q++)
+    {
+
+        //replaced_tokens < 5 is only added to prevent people from using @whatever so many times in a sentence that it lags the server.
+        if(tokens[q].substr(0,1) == "@" && tokens[q].size() > 1 && replaced_tokens < 5)
         {
             string _str = tokens[q].substr(1, tokens[q].length());
-            if(_str == "closeplayer" || _str == "closep")
+            string _str_0 = _str.substr(0, 1);
+
+            for(;;)//No loops, only done so I can break out whenever and easily.
             {
-                CPlayer@ target_player = SortPlayersByDistance(point, 99999999)[1];
-                if(target_player != null)
+                if(_str == "closeplayer" || _str == "closep" || _str_0 == "p")
                 {
-                    print("check 1");
-                    _str = target_player.getUsername();
+                    if(_str_0 == "p")
+                    {
+                        string _str_1 = _str.substr(1, _str.size());
+                        if(_str_1.size() == 0 || !IsDigitsOnly(_str_1))
+                        {
+                            break;
+                        }
+                        
+                        skip_count = parseInt(_str_1);
+                    }
+
+
+                    if(target_players.size() == 0)
+                    {
+                        target_players = SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
+                    }
+
+                    if(target_players.size() > skip_count)
+                    {
+                        _str = target_players[skip_count].getUsername();
+                        replaced_tokens++;
+                    }
                 }
-            }
-            else if( _str == "farplayer" || _str == "farp")
-            {
-                print("farp, hehe");
-                
-            }
-            else if( _str == "closeblob" || _str == "closeb")
-            {
+                else if(_str == "closeblob" || _str == "closeb" || _str_0 == "b")
+                {
+                    if(_str_0 == "b")
+                    {
+                        string _str_1 = _str.substr(1, _str.size());
+                        if(_str_1.size() == 0 ||!IsDigitsOnly(_str_1))
+                        {
+                            break;
+                        }
+                        
+                        skip_count = parseInt(_str_1);
+                    }
 
-            }
-            else if( _str == "farblob" || _str == "farb")
-            {
-                
-            }
+                    if(target_blobs.size() == 0)
+                    {
+                        array<CBlob@> _blobs;
+                        getBlobs(_blobs);
+                        target_blobs = SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
+                    }
+                    
+                    if(target_blobs.size() > skip_count)
+                    {
+                        _str = target_blobs[skip_count].getNetworkID();
+                        replaced_tokens++;
+                    }
+                }
+                else if(_str == "farplayer" || _str == "farp")//Farp
+                {
+                    if(target_players.size() == 0)
+                    {
+                        target_players = SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
+                    }
 
-            tokens[q] = _str;
+                    if(target_players.size() != 0)
+                    {
+                        _str = target_players[target_players.size() - 1].getUsername();
+                        replaced_tokens++;
+                    }
+                }
+                else if(_str == "farblob" || _str == "farb")
+                {
+                    if(target_blobs.size() == 0)
+                    {
+                        array<CBlob@> _blobs; 
+                        getBlobs(_blobs);
+                        target_blobs = SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
+                    }
+                    if(target_blobs.size() != 0)
+                    {
+                        _str = target_blobs[target_blobs.size() - 1].getNetworkID();
+                        replaced_tokens++;
+                    }
+                }
+
+                break;
+            }
+            
+            tokens[q] = (replaced_tokens == old_replaced_tokens ? "@" : "") + _str;
+            old_replaced_tokens = replaced_tokens;
         }
 
 
@@ -434,59 +518,114 @@ string atFindAndReplace(Vec2f point, string text_in)
 
         text_out += _space + tokens[q];
     }
-    //print(text_out);
+    
     return text_out;
 }
+//IDEAS
+//Team versions i.e @closeblobonsameteam or @closeblobnotonsameteam.
+//Specify value of which. I.E @blob3 to get the third closest blob. @blob0 to get your blob
 
-array<CPlayer@> SortPlayersByDistance(Vec2f point, f32 radius)
+
+//Players without blobs are not included in the array.
+array<CPlayer@> SortPlayersByDistance(Vec2f point, f32 radius, bool skip_unactive_and_inventory = true)
 {
+    u16 i;
+
+    u16 non_null_count = 0;
+    
     array<CBlob@> playerblobs(getPlayerCount());
-    array<CPlayer@> closestplayers(getPlayerCount());
-    
-    for(uint i = 0; i < playerblobs.length(); i++)
+
+    //Put all blobs in playerblobs array
+    for(i = 0; i < playerblobs.size(); i++)
     {
-        CPlayer@ _player = getPlayer(i);
-        if(_player != null)
+        CPlayer@ player = getPlayer(i);
+        if(player != null)
         {
-            @playerblobs[i] = @_player.getBlob();
-        }
-    }
-
-    array<f32> blob_dist(closestplayers.length, 99999999);
-    for (uint step = 0; step < getPlayerCount(); step++)
-    {
-
-
-
-
-
-        if(playerblobs[step] == null)
-        {
-            continue;
-        }
-        for(u16 i = 0; i < playerblobs.length; i++)
-        {
-
-            for(u16 q = 0; q < closestplayers.length; q++)
+            CBlob@ player_blob = player.getBlob();
+            
+            if(player_blob != null//If the player has a blob. 
+            && (!skip_unactive_and_inventory || player_blob.isActive() || !player_blob.isInInventory()))//And if skip_unactive is true, only if the blob is active and not in an inventory.
             {
-                print("step = " + step + "\ni = " + i + "\nq = " + q);
-
-                Vec2f tpos = playerblobs[step].getPosition();
-                f32 dist = (tpos - point).getLength();
-                blob_dist[step] = dist;
-                if (dist < blob_dist[q])
-                {
-                    @closestplayers[q] = @playerblobs[step].getPlayer();
-                }   
+                @playerblobs[non_null_count] = @player_blob;
+                non_null_count++;
             }
-
         }
     }
+
+    playerblobs.resize(non_null_count);
+
+    playerblobs = SortBlobsByDistance(point, radius, playerblobs);
     
-    return closestplayers;
+    array<CPlayer@> sorted_players(playerblobs.size());
+
+    for(i = 0; i < non_null_count; i++)
+    {
+        @sorted_players[i] = @playerblobs[i].getPlayer();
+    }
+
+    return sorted_players;
 }
 
-bool getAndAssignTargets(CRules@ this, CPlayer@ player, string[]@ tokens, u8 target_player_slot, bool target_player_blob_param, CPlayer@ &out target_player, CBlob@ &out target_blob)
+//Blobs outside of the radius are not included within the returned array.
+array<CBlob@> SortBlobsByDistance(Vec2f point, f32 radius, array<CBlob@> blob_array, bool skip_unactive_and_inventory = false)
+{
+    u16 i, j;
+
+    array<CBlob@> sorted_array(blob_array.size());
+
+    array<f32> blob_dist(blob_array.size());
+
+    u16 non_null_count = 0;
+
+    for (i = 0; i < blob_array.size(); i++)//Make an array that contains the distance that each blob is from the point.
+    {
+        if(blob_array[i] == null//If the blob does not exist
+        || (skip_unactive_and_inventory && (blob_array[i].isActive() == false || blob_array[i].isInInventory())))//Or skip_unactive is true and the blob is not active or in an inventory
+        {
+            continue;//Do not add this to the array
+        }
+
+        f32 dist = (blob_array[i].getPosition() - point).getLength();//Find the distance from the point to the blob
+        
+        if(dist > radius) //If the distance to the blob from the point is greater than the radius.
+        {
+            continue;//Do not add this to the array
+        }
+
+        @sorted_array[non_null_count] = blob_array[i];
+
+        blob_dist[non_null_count] = dist;
+        
+        non_null_count++;
+    }
+
+    sorted_array.resize(non_null_count);//Resize to remove nulls
+    blob_dist.resize(non_null_count);//This too. Null things don't have positions to calculate the distance between it and the point given.
+    
+    for (j = 1; j < non_null_count; j++)//Insertion sort each blob.
+    {
+        for(i = j; i > 0 && blob_dist[i] < blob_dist[i - 1]; i--)
+        {
+            //Swap
+            float _dist = blob_dist[i - 1];
+            blob_dist[i - 1] = blob_dist[i];
+            blob_dist[i] = _dist;
+            //Swap
+            CBlob@ _blob = sorted_array[i - 1];
+            @sorted_array[i - 1] = sorted_array[i];
+            @sorted_array[i] = _blob;
+        }
+    }
+
+    //for(i = 0; i < non_null_count; i++)
+    //{
+    //    print("blob_dist[" + i + "] = " + blob_dist[i]);
+    //}
+
+    return sorted_array;
+}
+
+bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slot, bool target_player_blob_param, CPlayer@ &out target_player, CBlob@ &out target_blob)
 {
     if(tokens.length <= target_player_slot)
     {
@@ -646,6 +785,33 @@ bool DebugCommand(ICommand@ command, bool debug_messages)//if debug_messages is 
 
     return true;
 }
+
+
+bool IsDigitsOnly(string _string)
+{
+    for(u32 i = 0; i < _string.size(); i++)
+    {
+        string str = _string.substr(i, i + 1);
+        
+        if(str == "0" || str == "1" || str == "2" || str == "3" || str == "4" || str == "5" || str == "6" || str == "7" || str == "8" || str == "9")
+        {
+            continue;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    return true;
+ }
+
+/*array<f32> SortVectorArray(array<f32> vectors)
+{
+
+
+    return vectors;
+}*/
 
 /*CPlayer@ findNearestPlayer(bool skipclosest, Vec2f point, f32 radius)
 {

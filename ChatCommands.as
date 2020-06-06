@@ -86,6 +86,10 @@
 
 //Custom roles.
 
+//Optimizations to not do comparing of player names or netid's if the token is started with @
+
+//Check if the script it already added before adding it again in addscript
+
 
 #include "MakeSeed.as";
 #include "MakeCrate.as";
@@ -184,6 +188,7 @@ void onInit(CRules@ this)
         Lantern(),
         ChangeGameState(),
         C_AddScript(),
+        BlobNameByID(),
         CommandCount()//End*/
     };
 
@@ -258,15 +263,15 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
 	}
 
     string text_in;
-    /*if(blob != null)
+    if(blob != null)
     {
-        text_in = atFindAndReplace(blob.getPosition(), _text_in);
+        text_in = atFindAndReplace(blob.getPosition(), _text_in, true, true);
         text_out = text_in;
     }
     else
-    {*/
+    {
         text_in = _text_in;
-    //}
+    }
 
     if(text_in.substr(0, 1) != "!")
     {
@@ -363,7 +368,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     //If the command wants target_player
     if(command.getTargetPlayerSlot() != 0)
     {   //Get target_player.
-        if(!getAndAssignTargets(this, player, tokens, command.getTargetPlayerSlot(), command.getTargetPlayerBlobParam(), target_player, target_blob))
+        if(!getAndAssignTargets(player, tokens, command.getTargetPlayerSlot(), command.getTargetPlayerBlobParam(), target_player, target_blob))
         {
             return false;//Failing to get target_player warrants stopping the command.
         }
