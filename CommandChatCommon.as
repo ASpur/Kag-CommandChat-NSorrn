@@ -568,9 +568,9 @@ bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ pl
         
         commands[p].Setup(tokens);//Setup permissions required to use the command. the permissions can vary based on the tokens.
         
-        if(!DebugCommand(commands[p], false))
+        if(!DebugCommand(commands[p], false))//Confirms that the command isn't missing something. If the bool variable is true, it will print the command's variables.
         {
-            print("DebugCommand returned false on command " + p);
+            error("DebugCommand returned false on command " + p);
             return false;
         }
 
