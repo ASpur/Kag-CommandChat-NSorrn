@@ -614,7 +614,10 @@ bool DebugCommand(ICommand@ command, bool debug_messages)//if debug_messages is 
 
         for(u16 i = 0; i < names.size(); i++)
         {
-            print("command.getNames()[" + i + "] = " + names[i] + "\n");
+            if(names[i] != 0)
+            {
+                print("command.getNames()[" + i + "] = " + names[i] + "\n");
+            }
         }
         
         print("command.getPermLevel() = " + command.getPermLevel() + "\n");
