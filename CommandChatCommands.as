@@ -1699,17 +1699,18 @@ class AddRobot : CommandBase
 //!forcerespawn - respawns a player even if they already exist or are dead. Return from the dead.
 class ForceRespawn : CommandBase
 {
+    ForceRespawn()
+    {
+        names[0] = "forcerespawn".getHash();
+    }
+
     void Setup(string[]@ tokens) override
     {
-        if(names[0] == 0)
-        {
-            names[0] = "forcerespawn".getHash();
-        }
-
         permlevel = pAdmin;
         if(tokens.length > 1)
         {
             target_player_slot = 1;
+            target_player_blob_param = false;
         }
         blob_must_exist = false;
         commandtype = Template;
