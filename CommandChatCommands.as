@@ -2214,6 +2214,70 @@ class Unmute : CommandBase
     }
 }
 
+//!massblobspawn {blob} {amount}
+class MassBlobSpawn : CommandBase
+{
+    MassBlobSpawn()
+    {
+        names[0] = "massblobspawn".getHash();
+        names[1] = "massspawn".getHash();
+        names[2] = "massblob".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;//Requires adminship
+        
+        commandtype = Debug;
+
+        minimum_parameter_count = 2;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        if(!IsDigitsOnly(tokens[2]))
+        {
+            sendClientMessage(player, "The second parameter has more than just digits.");
+            return true;
+        }
+
+        u16 blob_count = parseInt(tokens[2]);
+        if(blob_count < 1)
+        {
+            sendClientMessage(player, "The blob count cannot be less than 1");
+            return false;
+        }
+        if(blob_count > 50)
+        {
+            sendClientMessage(player, "This command limits the mass blob spawning to 50 blobs\nThis is to prevent unintentional server crashing by spawning too many blobs accidently.");
+            return true;
+        }
+
+        CBlob@ massblob = server_CreateBlobNoInit(tokens[1]);
+
+        if(massblob.getName() == " ")
+        {
+            sendClientMessage(player, "Failed to spawn blob from " + tokens[1]);
+            return false;
+        }
+        
+        massblob.server_setTeamNum(team);
+        massblob.setPosition(pos);
+        massblob.Init();
+
+        for(u16 i = 1; i < blob_count; i++)
+        {
+            @massblob = server_CreateBlobNoInit(tokens[1]);
+            
+            massblob.server_setTeamNum(team);
+            massblob.setPosition(pos);
+            massblob.Init();
+        }
+        
+        return true;
+    }
+}
+
 //Template
 /*
 class Input_Name_Here : CommandBase

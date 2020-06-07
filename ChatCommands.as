@@ -183,6 +183,7 @@ void onInit(CRules@ this)
         BlobNameByID(),
         Mute(),
         Unmute(),
+        MassBlobSpawn(),
         CommandCount()//End*/
     };
 
@@ -336,7 +337,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             CBlob@ created_blob = server_CreateBlob(name, team, pos);
             if(created_blob.getName() == "")
             {
-                sendClientMessage(player, "Failed to spawn " + name);
+                sendClientMessage(player, "Failed to spawn " + name + ". You may of mispelled a command.");
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
             
