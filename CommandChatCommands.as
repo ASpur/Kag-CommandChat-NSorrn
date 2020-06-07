@@ -1709,9 +1709,9 @@ class ForceRespawn : CommandBase
         permlevel = pAdmin;
         if(tokens.length > 1)
         {
-            blob_must_exist = false;
             target_player_slot = 1;
         }
+        blob_must_exist = false;
         commandtype = Template;
     }
 
