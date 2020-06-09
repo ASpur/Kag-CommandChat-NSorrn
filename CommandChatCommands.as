@@ -441,14 +441,16 @@ class Crate : CommandBase
 //!test (number) (playerusername) - Read the stuff below to be informed on how to make commands.
 class Test : CommandBase
 {
-    void Setup(string[]@ tokens) override
+    Test()//This happens only when this command is first added to the commands array.
     {
-        if(names[0] == 0)//Code in here happens only once.
-        {
-            names[0] = "test".getHash();//Assign the name used to use this command. Sending !test in the chat will activate this command
-            names[1] = "testy".getHash();//Optionally, !testy can also be used to use this command
-        }
-        
+        names[0] = "test".getHash();//Assign the name used to use this command. Sending !test in the chat will activate this command
+        names[1] = "testy".getHash();//Optionally, !testy can also be used to use this command
+        names[2] = "testa".getHash();
+        names[3] = "testo".getHash();
+        names.push_back("testin".getHash());//If you want to add more than 4 names, do it like this.
+    }
+    void Setup(string[]@ tokens) override
+    {        
         permlevel = pAdmin;//Assigns the permission level to be admin. You must be an admin to use this command.
 			
         commandtype = Testing;//The type of command this is. This is only useful in displaying things in the interactive help menu (not yet made). So atm this does nothing.
