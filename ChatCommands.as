@@ -65,6 +65,10 @@
 //Prints to chat the netid of the thing your mouse is hovering over
 //Use commands.
 
+//!blobwithscripts {scripts
+//Ex: !blobwithscripts AimFacePos.as !FleshHitEffects.as Eatable.as
+//Starting a script with ! removes the script if the blob comes with it.
+
 //IDEAS: 
 
 //Seperate server only and client only command arrays.
@@ -82,9 +86,18 @@
 //Check if the script it already added before adding it again in addscript
 
 
+
+
+
+
+
 #include "MakeSeed.as";
 #include "MakeCrate.as";
 #include "MakeScroll.as";
+#include "RunnerCommon.as";
+#include "FallDamageCommon.as";
+#include "KnockedCommon.as";
+#include "RunnerTextures.as";
 
 dictionary player_last_sent(); 
 bool ChatCommandCoolDown = false; // Enable if you want cooldowns between commands on your server.
@@ -101,7 +114,14 @@ void onInit(CRules@ this)
     this.addCommandID("colorlantern");
     this.addCommandID("addscript");
     this.addCommandID("enginemessage");	
+    this.addCommandID("flipmovers");	
     //onCommand end
+
+    if (!GUI::isFontLoaded("AveriaSerif-Bold_22"))
+	{		
+		string AveriaSerif = CFileMatcher("AveriaSerif-Bold.ttf").getFirst();
+		GUI::LoadFont("AveriaSerif-Bold_22", AveriaSerif, 22, true);
+	}
 
     if(!isServer())
     {
@@ -121,7 +141,7 @@ void onInit(CRules@ this)
     this.set("ChatCommands", initcommands);
     //Command array init end
 
-
+    this.set_s16("gravity_reverse", 1);
 
 
     array<ICommand@> _commands = 
@@ -184,6 +204,7 @@ void onInit(CRules@ this)
         Mute(),
         Unmute(),
         MassBlobSpawn(),
+        ReverseGravity(),
         CommandCount()//End*/
     };
 
@@ -565,14 +586,28 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 		string text = params.read_string();
         EngineMessage(text);
     }
+    else
+    {
+        ReverseGravity::onCommand(this, cmd, params);
+    }
+}
+
+void onTick(CRules@ this)
+{
+    ReverseGravity::onTick(this);
+
 }
 
 void onRender( CRules@ this )
 {
+    ReverseGravity::onRender(this);
+    
     if(!isClient())
     {
         return;
     }
+    
+    GUI::SetFont("menu");
 
     CPlayer@ localplayer = getLocalPlayer();
     if(localplayer == null)
@@ -585,6 +620,14 @@ void onRender( CRules@ this )
 		GUI::DrawTextCentered(this.get_string("announcement"), Vec2f(getScreenWidth()/2,getScreenHeight()/2), SColor(255,255,127,60));
 	}
 
+    s16 gravity_reverse = this.get_s16("gravity_reverse");
+    if(gravity_reverse != 0 && Maths::Abs(gravity_reverse) != 1)
+	{
+        GUI::SetFont("AveriaSerif-Bold_22");
+		GUI::DrawTextCentered("Gravity will be flipped in " + Maths::Roundf(float(Maths::Abs(gravity_reverse)) / 30.0f) + " Seconds. Grab loose items and take cover.", Vec2f(getScreenWidth()/2,getScreenHeight()/2 - 220), SColor(200,255,20,20));
+        GUI::SetFont("menu");
+	}
+
 
     if(this.get_bool(localplayer.getNetworkID() + "_showHelp") == false)
     {
@@ -592,7 +635,7 @@ void onRender( CRules@ this )
     }
 	u8 nextline = 16;
 	
-	GUI::SetFont("menu");
+
     Vec2f drawPos = Vec2f(getScreenWidth() - 350, 0);
     Vec2f drawPos_width = Vec2f(drawPos.x + 346, drawPos.y);
     GUI::DrawText("Commands parameters:\n" + 
@@ -688,4 +731,352 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 	}
 
 	return true;
+}
+
+
+void onBlobCreated( CRules@ this, CBlob@ blob )
+{
+    ReverseGravity::onBlobCreated(this, blob);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Bad code below
+namespace ReverseGravity
+{
+    array<CBlob@> onblobcreated();
+    array<u16> onblobcreatedleft();
+    //Stupid idea!
+    //Reverse gravity event. Give all players 15 seconds of advanced warning. reverse gravity. Make sure people can jump when it is reversed.
+    //Reaching the top of the map very slowly kills you. if you reach a sky ladder you can get back to ground.
+    //After spawning you get 5 seconds of normal gravity. During this time gravity slowly becomes reversed.
+    //Flip player controlled blob sprites and those with ai upsidown.
+    //Seeds fall up after tree is mined.
+
+    //Stupid idea!
+
+    void onTick(CRules@ this)
+    {
+        s16 gravity_reverse = this.get_s16("gravity_reverse");
+
+        if(onblobcreated.size() != 0)
+        {
+            for(u16 i = 0; i < onblobcreated.size(); i++)
+            {
+                u16 value = onblobcreatedleft[i];
+                CBlob@ blob;
+
+                if(value != 0)
+                {
+                    value--;
+                    onblobcreatedleft[i] = value;
+                    continue;
+                }
+                else
+                {
+                    @blob = onblobcreated[i];
+
+                    onblobcreatedleft.removeAt(i);
+                    onblobcreated.removeAt(i);
+                }
+
+                if(gravity_reverse < 0)
+                {
+                    CMovement@ blob_movement = blob.getMovement();
+                    if(blob_movement != null)
+                    {
+                        CSprite@ blob_sprite = blob.getSprite();
+                        if(blob_sprite != null)
+                        {  
+                            blob_sprite.RotateByDegrees(180.0f, -blob_sprite.getOffset());
+                            if(blob.hasScript("RunnerHead.as"))
+                            {
+                                blob.RemoveScript("RunnerHead.as");
+                                blob_sprite.RemoveScript("RunnerHead.as");
+                                blob_sprite.RemoveSpriteLayer("head");
+                            }
+                            
+                            if(blob_movement.hasScript("FaceAimPosition.as"))
+                            {
+                                blob_movement.RemoveScript("FaceAimPosition.as");
+                                blob.set_bool("hasFaceAimPos.as", true);
+                            }
+                        }   
+                    }
+                }
+            }
+        }//OnBlocCreated
+
+        if(isServer())
+        {
+            if(Maths::Abs(gravity_reverse) != 1)
+            {
+                gravity_reverse += 1 * (gravity_reverse >= 0 ? -1 : 1);
+                this.set_s16("gravity_reverse", gravity_reverse);
+
+                if(Maths::Abs(gravity_reverse) == 1)
+                {
+                    if(gravity_reverse > 0)//Flip the gravity to negative
+                    {
+                        gravity_reverse = -1;
+                        this.set_s16("gravity_reverse", gravity_reverse);
+                    }
+                    else//Gravity Flipping to normal
+                    {
+                        gravity_reverse = 1;
+                        this.set_s16("gravity_reverse", gravity_reverse);
+                    }
+                    
+                    CBitStream params;
+                    this.SendCommand(this.getCommandID("flipmovers"), params);
+                    
+                    sv_gravity = sv_gravity * -1;
+                }
+
+                if((Maths::Abs(gravity_reverse) - 1) % 30 == 0)
+                {
+                    this.Sync("gravity_reverse", true);
+                }
+            }
+        }
+
+        if(gravity_reverse < 0)
+        {
+            array<CBlob@> blobs;
+            getBlobs(blobs);
+            bool every_3_ticks = false;
+            
+            if(getGameTime() % 3 == 0)
+            {
+                every_3_ticks = true;
+            }
+
+            for(u16 i = 0; i < blobs.size(); i++)
+            {
+                //Jumping upsidown
+                RunnerMoveVars@ moveVars;
+                if(blobs[i].get("moveVars", @moveVars))
+                {
+                    ReversedJumpingCode(blobs[i], moveVars);
+                }//Jumping upsidown
+
+                //Inverted facing direction
+                if(every_3_ticks && blobs[i].get_bool("hasFaceAimPos.as") && !blobs[i].hasTag("dead"))
+                {
+                    bool facing = (blobs[i].getAimPos().x >= blobs[i].getPosition().x);
+                    
+                    blobs[i].SetFacingLeft(facing);
+
+                    // face for all attachments
+
+                    if (blobs[i].hasAttached())
+                    {
+                        AttachmentPoint@[] aps;
+                        if (blobs[i].getAttachmentPoints(@aps))
+                        {
+                            for (uint i = 0; i < aps.length; i++)
+                            {
+                                AttachmentPoint@ ap = aps[i];
+                                if (ap.socket && ap.getOccupied() !is null)
+                                {
+                                    ap.getOccupied().SetFacingLeft(facing);
+                                }
+                            }
+                        }
+                    }
+
+                }//Inverted facing direction
+
+
+                if(every_3_ticks && blobs[i].getPosition().y <= 18)//Void damage
+                {
+                    if(isServer())
+                    {
+                        blobs[i].server_Hit(blobs[i], Vec2f(0,0), Vec2f(0,0), 0.1f, 0);
+                    }
+                    if(blobs[i].hasScript("IgnoreDamage.as"))
+                    {
+                        blobs[i].RemoveScript("IgnoreDamage.as");
+                    }
+                }
+
+                CShape@ blob_shape = blobs[i].getShape();
+
+                if(blob_shape != null && !blob_shape.isStatic() && blobs[i].getName() == "seed")
+                {
+                    blob_shape.SetStatic(true);
+                }
+                
+            }
+        }
+    }
+
+    void onBlobCreated( CRules@ this, CBlob@ blob )
+    {
+        if(this.get_s16("gravity_reverse") < 0)
+        {
+            onblobcreated.push_back(blob);
+            onblobcreatedleft.push_back(5);
+        }
+    }
+
+    void onCommand( CRules@ this, u8 cmd, CBitStream @params )
+    {
+        if(cmd == this.getCommandID("flipmovers") )
+        {
+            array<CBlob@> blobs;
+            getBlobs(blobs);
+            for(u16 i = 0; i < blobs.size(); i++)
+            {
+                CMovement@ blob_movement = blobs[i].getMovement();
+                if(blob_movement != null)
+                {
+                    CSprite@ blob_sprite = blobs[i].getSprite();
+                    if(blob_sprite != null)
+                    {   
+                        blob_sprite.RotateByDegrees(180.0f, -blob_sprite.getOffset());
+                        if(blobs[i].hasScript("RunnerHead.as"))
+                        {
+                            blobs[i].RemoveScript("RunnerHead.as");
+                            blob_sprite.RemoveScript("RunnerHead.as");
+                            blob_sprite.RemoveSpriteLayer("head");
+                        }
+
+                        if(blob_movement.hasScript("FaceAimPosition.as"))
+                        {
+                            blob_movement.RemoveScript("FaceAimPosition.as");
+                            blobs[i].set_bool("hasFaceAimPos.as", true);
+                        }
+                        else if(blobs[i].get_bool("hasFaceAimPos.as"))
+                        {
+                            blob_movement.AddScript("FaceAimPosition.as");
+                            blobs[i].set_bool("hasFaceAimPos.as", false);
+                            blobs[i].AddScript("RunnerHead.as");
+                            blob_sprite.AddScript("RunnerHead.as");
+                        }
+                    }
+                }
+
+                CShape@ blob_shape = blobs[i].getShape();
+                if(blob_shape != null && blob_shape.isStatic() && blobs[i].getName() == "seed")
+                {
+                    blob_shape.SetStatic(false);
+                }
+            }
+        }
+    }
+    
+    void onRender( CRules@ this )
+    {   
+        
+    }
+
+    void ReversedJumpingCode(CBlob@ blob, RunnerMoveVars@ moveVars)
+    {
+        if (moveVars.jumpFactor > 0.01f && !isKnocked(blob) && !blob.isOnLadder())
+        {
+
+            if (blob.isOnCeiling())
+            {
+                moveVars.jumpCount = 0;
+            }
+            else
+            {
+                moveVars.jumpCount++;
+            }
+
+            if (blob.isKeyPressed(key_down) && blob.getVelocity().y < moveVars.jumpMaxVel) //blob.getVelocity().y > -moveVars.jumpMaxVel)
+            {
+                moveVars.jumpStart = 0.7f;
+                moveVars.jumpMid = 0.2f;
+                moveVars.jumpEnd = 0.1f;
+                bool crappyjump = false;
+
+                //todo what constitutes a crappy jump? maybe carrying heavy?
+                if (crappyjump)
+                {
+                    moveVars.jumpStart *= 0.79f;
+                    moveVars.jumpMid *= 0.69f;
+                    moveVars.jumpEnd *= 0.59f;
+                }
+
+                Vec2f force = Vec2f(0, 0);
+                f32 side = 0.0f;
+
+                if (blob.isFacingLeft() && blob.isKeyPressed(key_left))
+                {
+                    side = -1.0f;
+                }
+                else if (!blob.isFacingLeft() && blob.isKeyPressed(key_right))
+                {
+                    side = 1.0f;
+                }
+
+                // jump
+                if (moveVars.jumpCount <= 0)
+                {
+                    force.y += 1.5f;
+                }
+                else if (moveVars.jumpCount < 3)
+                {
+                    force.y += moveVars.jumpStart;
+                    //force.x += side * moveVars.jumpMid;
+                }
+                else if (moveVars.jumpCount < 6)
+                {
+                    force.y += moveVars.jumpMid;
+                    //force.x += side * moveVars.jumpEnd;
+                }
+                else if (moveVars.jumpCount < 8)
+                {
+                    force.y += moveVars.jumpEnd;
+                }
+
+                //if (blob.isOnWall()) {
+                //  force.y *= 1.1f;
+                //}
+
+                force *= moveVars.jumpFactor * moveVars.overallScale * 60.0f;
+
+
+                blob.AddForce(force);
+
+                // sound
+
+                /*if (moveVars.jumpCount == 1 && is_client)
+                {
+                    TileType tile = blob.getMap().getTile(blob.getPosition() + Vec2f(0.0f, blob.getRadius() + 4.0f)).type;
+
+                    if (blob.getMap().isTileGroundStuff(tile))
+                    {
+                        blob.getSprite().PlayRandomSound("/EarthJump");
+                    }
+                    else
+                    {
+                        blob.getSprite().PlayRandomSound("/StoneJump");
+                    }
+                }*/
+            }
+        }
+    }
 }

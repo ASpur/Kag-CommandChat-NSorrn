@@ -2177,6 +2177,8 @@ class Unmute : CommandBase
         
         commandtype = Moderation;
 
+        no_sv_test = true;
+
         minimum_parameter_count = 1;
 
         if(tokens[0] == "unmute")//unmute 
@@ -2231,6 +2233,8 @@ class MassBlobSpawn : CommandBase
         
         commandtype = Debug;
 
+        no_sv_test = true;
+
         minimum_parameter_count = 2;
     }
 
@@ -2273,6 +2277,60 @@ class MassBlobSpawn : CommandBase
             massblob.server_setTeamNum(team);
             massblob.setPosition(pos);
             massblob.Init();
+        }
+        
+        return true;
+    }
+}
+
+//!reversegravity [seconds warning]
+class ReverseGravity : CommandBase
+{
+    ReverseGravity()
+    {
+        names[0] = "reversegravity".getHash();
+    }
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;//Requires adminship
+        
+        commandtype = BeyondStupid;
+
+        no_sv_test = true;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        s16 warning_time = 30 * 30;//30 Seconds
+        
+        s16 gravity_reverse = rules.get_s16("gravity_reverse");
+
+        if(tokens.size() > 1)
+        {
+            if (!IsDigitsOnly(tokens[1]))
+            {
+                sendClientMessage(player ,"The first parameter was not only digits");
+                return true;
+            }
+            warning_time = parseInt(tokens[1]) * 30;
+            if(warning_time < 1)
+            {
+                sendClientMessage(player, "The time in seconds before gravity changes cannot be 0 or less than 0.");
+                return true;
+            }
+        }
+
+        if(gravity_reverse > 1)
+        {
+            rules.set_s16("gravity_reverse", warning_time * 1);
+        }
+        else if(gravity_reverse < -1)
+        {
+            rules.set_s16("gravity_reverse", warning_time * -1);
+        }
+        else if(Maths::Abs(gravity_reverse) == 1)
+        {
+            rules.set_s16("gravity_reverse", warning_time * (gravity_reverse >= 0 ? 1 : -1));
         }
         
         return true;
