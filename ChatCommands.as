@@ -993,7 +993,7 @@ namespace ReverseGravity
 
     void ReversedJumpingCode(CBlob@ blob, RunnerMoveVars@ moveVars)
     {
-        if (moveVars.jumpFactor > 0.01f && !isKnocked(blob) && !blob.isOnLadder())
+        if (moveVars.jumpFactor > 0.01f && !isKnocked(blob) && !blob.isOnLadder() && !blob.isOnGround())
         {
 
             if (blob.isOnCeiling())
