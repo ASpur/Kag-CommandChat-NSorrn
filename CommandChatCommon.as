@@ -302,7 +302,7 @@ array<CPlayer@> getPlayersByShortUsername(string shortname)
             return playersoutone;//Return this array
         }
 
-        if(playerusername.substr(0, shortname.length()) == shortname)//If the players username contains shortname
+        if(playerusername.substr(0, shortname.size()) == shortname)//If the players username contains shortname
         {
             playersout.push_back(player);//Put the array.
         }
@@ -314,10 +314,10 @@ array<CPlayer@> getPlayersByShortUsername(string shortname)
 CPlayer@ getPlayerByShortUsername(string shortname)
 {
     array<CPlayer@> target_players = getPlayersByShortUsername(shortname);//Get a list of players that have this as the start of their username
-    if(target_players.length() > 1)//If there is more than 1 player in the list
+    if(target_players.size() > 1)//If there is more than 1 player in the list
     {
         string playernames = "";
-        for(int i = 0; i < target_players.length(); i++)//for every player in that list
+        for(int i = 0; i < target_players.size(); i++)//for every player in that list
         {
             playernames += " : " + target_players[i].getUsername();//put their name in a string
         }
@@ -448,7 +448,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
         //replaced_tokens < 5 is only added to prevent people from using @whatever so many times in a sentence that it lags the server.
         if(tokens[q].substr(0,1) == "@" && tokens[q].size() > 1 && replaced_tokens < 5)
         {
-            string _str = tokens[q].substr(1, tokens[q].length());
+            string _str = tokens[q].substr(1, tokens[q].size());
             string _str_0 = _str.substr(0, 1);
 
             for(;;)//No loops, only done so I can break out whenever and easily.
@@ -664,7 +664,7 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
     if(target_players.size() > 1)//If there is more than 1 player in the list
     {
         string playernames = "";
-        for(int i = 0; i < target_players.length(); i++)//for every player in that list
+        for(int i = 0; i < target_players.size(); i++)//for every player in that list
         {
             playernames += " : " + target_players[i].getUsername();// put their name in a string
         }
@@ -846,7 +846,7 @@ bool IsDigitsOnly(string _string)
     array<CBlob@> playerblobs(getPlayerCount());
     array<CPlayer@> closestplayers(find_closest_count);
     
-    for(uint i = 0; i < playerblobs.length(); i++)
+    for(uint i = 0; i < playerblobs.size(); i++)
     {
         CPlayer@ _player = getPlayer(i);
         if(_player != null)
