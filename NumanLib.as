@@ -70,7 +70,7 @@ namespace Num
 
     //1: Input string.
     //Returns true, if that string has only digits 1-9. Returns false if it has something else (spaces aren't digits).
-    bool IsDigitsOnly(string _string)
+    bool IsNumeric(string _string)
     {
         for(u16 i = 0; i < _string.size(); i++)
         {    
