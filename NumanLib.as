@@ -72,22 +72,16 @@ namespace Num
     //Returns true, if that string has only digits 1-9. Returns false if it has something else (spaces aren't digits).
     bool IsDigitsOnly(string _string)
     {
-        for(u32 i = 0; i < _string.size(); i++)
-        {
-            string str = _string.substr(i, i + 1);
-            
-            if(str == "0" || str == "1" || str == "2" || str == "3" || str == "4" || str == "5" || str == "6" || str == "7" || str == "8" || str == "9")
-            {
-
-            }
-            else
+        for(u16 i = 0; i < _string.size(); i++)
+        {    
+            if(_string[i] < "0"[0] || _string[i] > "9"[0])
             {
                 return false;
             }
         }
 
         return true;
-    }
+    }//Thanks jammer312
 
     //1: Input string paramter.
     //2: Output bool value. If true, the string contained true. If false, the string contained false.

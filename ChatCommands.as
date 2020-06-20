@@ -85,7 +85,7 @@
 
 //Check if the script it already added before adding it again in addscript
 
-
+//Forcerespawn spawns the player on the ground.
 
 
 
