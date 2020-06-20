@@ -85,7 +85,7 @@
 
 //Check if the script it already added before adding it again in addscript
 
-
+//Forcerespawn spawns the player on the ground.
 
 
 
@@ -761,17 +761,28 @@ void onBlobCreated( CRules@ this, CBlob@ blob )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //Bad code below
 namespace ReverseGravity
 {
     array<CBlob@> onblobcreated();
     array<u16> onblobcreatedleft();
     //Stupid idea!
-    //Reverse gravity event. Give all players 15 seconds of advanced warning. reverse gravity. Make sure people can jump when it is reversed.
-    //Reaching the top of the map very slowly kills you. if you reach a sky ladder you can get back to ground.
-    //After spawning you get 5 seconds of normal gravity. During this time gravity slowly becomes reversed.
-    //Flip player controlled blob sprites and those with ai upsidown.
-    //Seeds fall up after tree is mined.
+    //What to do about just spawed players flying into the sky?
 
     //Stupid idea!
 
