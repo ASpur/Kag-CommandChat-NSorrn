@@ -2311,7 +2311,7 @@ class ReverseGravity : CommandBase
 
         if(tokens.size() > 1)
         {
-            if (!Num::IsNumerical(tokens[1]))
+            if (!Num::IsNumeric(tokens[1]))
             {
                 sendClientMessage(player ,"The first parameter was not only digits");
                 return true;
