@@ -698,7 +698,7 @@ class Announce : CommandBase
             }
         }
         CBitStream params;
-        params.write_string(text_in.substr(tokens[0].length()));
+        params.write_string(text_in.substr(tokens[0].size()));
         rules.SendCommand(rules.getCommandID("announcement"), params);
 
         return true;
@@ -1348,10 +1348,11 @@ class Teleport : CommandBase
             //}
             
             array<CPlayer@> target_players = Num::getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
-            if(target_players.length() > 1)//If there is more than 1 player in the list
+            if(target_players.size() > 1)//If there is more than 1 player in the list
+
             {
                 string playernames = "";
-                for(int i = 0; i < target_players.length(); i++)//for every player in that list
+                for(int i = 0; i < target_players.size(); i++)//for every player in that list
                 {
                     playernames += " : " + target_players[i].getUsername();// put their name in a string
                 }
