@@ -1,3 +1,4 @@
+#include "NumanLib.as";
 //Zable was a great help with finding problems and suggesting features.
 
 enum CommandType//For the interactive help menu (todo)
@@ -275,7 +276,7 @@ void sendClientMessage(CPlayer@ player, string message, SColor color)//Now with 
 	rules.SendCommand(rules.getCommandID("clientmessage"), params, player);
 }
 
-void sendEngineMessage(CPlayer@ player, string message)
+void sendEngineMessage(CPlayer@ player, string message)//Message that comes down from the top of the screen.
 {
     CRules@ rules = getRules();
 
@@ -283,53 +284,6 @@ void sendEngineMessage(CPlayer@ player, string message)
 	params.write_string(message);
 
 	rules.SendCommand(rules.getCommandID("enginemessage"), params, player);
-}
-
-//Get an array of players that have "shortname" at the start of their username. If their username is exactly the same, it will return an array containing only that player.
-array<CPlayer@> getPlayersByShortUsername(string shortname)
-{
-    array<CPlayer@> playersout;//The main array for storing all the players which contain shortname
-
-    for(int i = 0; i < getPlayerCount(); i++)//For every player
-    {
-        CPlayer@ player = getPlayer(i);//Grab the player
-        string playerusername = player.getUsername();//Get the player's username
-
-        if(playerusername == shortname)//If the name is exactly the same
-        {
-            array<CPlayer@> playersoutone;//Make a quick array
-            playersoutone.push_back(player);//Put the player in that array
-            return playersoutone;//Return this array
-        }
-
-        if(playerusername.substr(0, shortname.length()) == shortname)//If the players username contains shortname
-        {
-            playersout.push_back(player);//Put the array.
-        }
-    }
-    return playersout;//Return the array
-}
-
-//Uses the above getPlayersByShortUsername method.
-CPlayer@ getPlayerByShortUsername(string shortname)
-{
-    array<CPlayer@> target_players = getPlayersByShortUsername(shortname);//Get a list of players that have this as the start of their username
-    if(target_players.length() > 1)//If there is more than 1 player in the list
-    {
-        string playernames = "";
-        for(int i = 0; i < target_players.length(); i++)//for every player in that list
-        {
-            playernames += " : " + target_players[i].getUsername();//put their name in a string
-        }
-        print("There is more than one possible player for the player param" + playernames);//tell the client that these players in the string were found
-        return @null;//don't send the message to chat, don't do anything else
-    }
-    else if(target_players == null || target_players.length == 0)
-    {
-        print("No player was found for the player param.");
-        return @null;
-    }
-    return target_players[0];
 }
 
 string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string input)
@@ -458,7 +412,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(_str_0 == "p")
                     {
                         string _str_1 = _str.substr(1, _str.size());
-                        if(_str_1.size() == 0 || !IsDigitsOnly(_str_1))
+                        if(_str_1.size() == 0 || !Num::IsDigitsOnly(_str_1))
                         {
                             break;
                         }
@@ -469,7 +423,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
 
                     if(target_players.size() == 0)
                     {
-                        target_players = SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
+                        target_players = Num::SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
                     }
 
                     if(target_players.size() > skip_count)
@@ -483,7 +437,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(_str_0 == "b")
                     {
                         string _str_1 = _str.substr(1, _str.size());
-                        if(_str_1.size() == 0 ||!IsDigitsOnly(_str_1))
+                        if(_str_1.size() == 0 ||!Num::IsDigitsOnly(_str_1))
                         {
                             break;
                         }
@@ -495,7 +449,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     {
                         array<CBlob@> _blobs;
                         getBlobs(_blobs);
-                        target_blobs = SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
+                        target_blobs = Num::SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
                     }
                     
                     if(target_blobs.size() > skip_count)
@@ -508,7 +462,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                 {
                     if(target_players.size() == 0)
                     {
-                        target_players = SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
+                        target_players = Num::SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
                     }
 
                     if(target_players.size() != 0)
@@ -523,7 +477,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     {
                         array<CBlob@> _blobs; 
                         getBlobs(_blobs);
-                        target_blobs = SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
+                        target_blobs = Num::SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
                     }
                     if(target_blobs.size() != 0)
                     {
@@ -553,105 +507,6 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
 //Specify value of which. I.E @blob3 to get the third closest blob. @blob0 to get your blob
 
 
-//Players without blobs are not included in the array.
-array<CPlayer@> SortPlayersByDistance(Vec2f point, f32 radius, bool skip_unactive_and_inventory = true)
-{
-    u16 i;
-
-    u16 non_null_count = 0;
-    
-    array<CBlob@> playerblobs(getPlayerCount());
-
-    //Put all blobs in playerblobs array
-    for(i = 0; i < playerblobs.size(); i++)
-    {
-        CPlayer@ player = getPlayer(i);
-        if(player != null)
-        {
-            CBlob@ player_blob = player.getBlob();
-            
-            if(player_blob != null//If the player has a blob. 
-            && (!skip_unactive_and_inventory || player_blob.isActive() || !player_blob.isInInventory()))//And if skip_unactive is true, only if the blob is active and not in an inventory.
-            {
-                @playerblobs[non_null_count] = @player_blob;
-                non_null_count++;
-            }
-        }
-    }
-
-    playerblobs.resize(non_null_count);
-
-    playerblobs = SortBlobsByDistance(point, radius, playerblobs);
-    
-    array<CPlayer@> sorted_players(playerblobs.size());
-
-    for(i = 0; i < non_null_count; i++)
-    {
-        @sorted_players[i] = @playerblobs[i].getPlayer();
-    }
-
-    return sorted_players;
-}
-
-//Blobs outside of the radius are not included within the returned array.
-array<CBlob@> SortBlobsByDistance(Vec2f point, f32 radius, array<CBlob@> blob_array, bool skip_unactive_and_inventory = false)
-{
-    u16 i, j;
-
-    array<CBlob@> sorted_array(blob_array.size());
-
-    array<f32> blob_dist(blob_array.size());
-
-    u16 non_null_count = 0;
-
-    for (i = 0; i < blob_array.size(); i++)//Make an array that contains the distance that each blob is from the point.
-    {
-        if(blob_array[i] == null//If the blob does not exist
-        || (skip_unactive_and_inventory && (blob_array[i].isActive() == false || blob_array[i].isInInventory())))//Or skip_unactive is true and the blob is not active or in an inventory
-        {
-            continue;//Do not add this to the array
-        }
-
-        f32 dist = (blob_array[i].getPosition() - point).getLength();//Find the distance from the point to the blob
-        
-        if(dist > radius) //If the distance to the blob from the point is greater than the radius.
-        {
-            continue;//Do not add this to the array
-        }
-
-        @sorted_array[non_null_count] = blob_array[i];
-
-        blob_dist[non_null_count] = dist;
-        
-        non_null_count++;
-    }
-
-    sorted_array.resize(non_null_count);//Resize to remove nulls
-    blob_dist.resize(non_null_count);//This too. Null things don't have positions to calculate the distance between it and the point given.
-    
-    for (j = 1; j < non_null_count; j++)//Insertion sort each blob.
-    {
-        for(i = j; i > 0 && blob_dist[i] < blob_dist[i - 1]; i--)
-        {
-            //Swap
-            float _dist = blob_dist[i - 1];
-            blob_dist[i - 1] = blob_dist[i];
-            blob_dist[i] = _dist;
-            //Swap
-            CBlob@ _blob = sorted_array[i - 1];
-            @sorted_array[i - 1] = sorted_array[i];
-            @sorted_array[i] = _blob;
-        }
-    }
-
-    //for(i = 0; i < non_null_count; i++)
-    //{
-    //    print("blob_dist[" + i + "] = " + blob_dist[i]);
-    //}
-
-    return sorted_array;
-}
-
 bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slot, bool target_player_blob_param, CPlayer@ &out target_player, CBlob@ &out target_blob)
 {
     if(tokens.length <= target_player_slot)
@@ -660,7 +515,7 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
         return false;
     }
 
-    array<CPlayer@> target_players = getPlayersByShortUsername(tokens[target_player_slot]);//Get a list of players that have this as the start of their name
+    array<CPlayer@> target_players = Num::getPlayersByShortUsername(tokens[target_player_slot]);//Get a list of players that have this as the start of their name
     if(target_players.size() > 1)//If there is more than 1 player in the list
     {
         string playernames = "";
@@ -699,24 +554,6 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
     }
 
     return true;
-}
-
-bool getBool(string input_string, bool &out bool_value)
-{
-    input_string = input_string.toLower();
-    if(input_string == "true" || input_string == "1")
-    {
-        bool_value = true;
-        return true;
-    }
-    else if(input_string == "false" || input_string == "0")
-    {
-        bool_value = false;
-        return true;
-    }
-    bool_value = false;
-
-    return false;
 }
 
 bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ player, ICommand@ &out command)//Do not use null checks with the variable command. It is always not null for angelscript reasons.
@@ -812,26 +649,6 @@ bool DebugCommand(ICommand@ command, bool debug_messages)//if debug_messages is 
 
     return true;
 }
-
-
-bool IsDigitsOnly(string _string)
-{
-    for(u32 i = 0; i < _string.size(); i++)
-    {
-        string str = _string.substr(i, i + 1);
-        
-        if(str == "0" || str == "1" || str == "2" || str == "3" || str == "4" || str == "5" || str == "6" || str == "7" || str == "8" || str == "9")
-        {
-            continue;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    return true;
- }
 
 /*array<f32> SortVectorArray(array<f32> vectors)
 {

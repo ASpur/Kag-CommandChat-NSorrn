@@ -1,4 +1,5 @@
 #include "CommandChatCommon.as";
+#include "NumanLib.as";
 
 //Probably uneeded
 class C_Debug : CommandBase
@@ -1346,7 +1347,7 @@ class Teleport : CommandBase
             //    return false;
             //}
             
-            array<CPlayer@> target_players = getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
+            array<CPlayer@> target_players = Num::getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
             if(target_players.length() > 1)//If there is more than 1 player in the list
             {
                 string playernames = "";
@@ -2006,7 +2007,7 @@ class C_AddScript : CommandBase
         string script_name;
         string target_class;
         u16 target_netid = 0;
-        if(!getBool(tokens[1], relayToClients))
+        if(!Num::getBool(tokens[1], relayToClients))
         {
             sendClientMessage(player, "The second param was expecting either true|1 or false|0. It got neither.");
             return true;
@@ -2242,7 +2243,7 @@ class MassBlobSpawn : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        if(!IsDigitsOnly(tokens[2]))
+        if(!Num::IsDigitsOnly(tokens[2]))
         {
             sendClientMessage(player, "The second parameter has more than just digits.");
             return true;
@@ -2309,7 +2310,7 @@ class ReverseGravity : CommandBase
 
         if(tokens.size() > 1)
         {
-            if (!IsDigitsOnly(tokens[1]))
+            if (!Num::IsDigitsOnly(tokens[1]))
             {
                 sendClientMessage(player ,"The first parameter was not only digits");
                 return true;
