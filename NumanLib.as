@@ -72,7 +72,7 @@ namespace Num
     //Returns true, if that string has only digits 1-9. Returns false if it has something else (spaces aren't digits).
     bool IsNumeric(string _string)
     {
-        for(u16 i = 0; i < _string.size(); i++)
+        for(uint i = 0; i < _string.size(); i++)
         {    
             if(_string[i] < "0"[0] || _string[i] > "9"[0])
             {
