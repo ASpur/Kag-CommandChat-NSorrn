@@ -412,7 +412,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(_str_0 == "p")
                     {
                         string _str_1 = _str.substr(1, _str.size());
-                        if(_str_1.size() == 0 || !Num::IsDigitsOnly(_str_1))
+                        if(_str_1.size() == 0 || !Num::IsNumeric(_str_1))
                         {
                             break;
                         }
@@ -437,7 +437,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(_str_0 == "b")
                     {
                         string _str_1 = _str.substr(1, _str.size());
-                        if(_str_1.size() == 0 ||!Num::IsDigitsOnly(_str_1))
+                        if(_str_1.size() == 0 ||!Num::IsNumeric(_str_1))
                         {
                             break;
                         }

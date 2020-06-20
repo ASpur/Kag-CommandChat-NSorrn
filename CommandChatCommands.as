@@ -2244,7 +2244,7 @@ class MassBlobSpawn : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        if(!Num::IsDigitsOnly(tokens[2]))
+        if(!Num::IsNumeric(tokens[2]))
         {
             sendClientMessage(player, "The second parameter has more than just digits.");
             return true;
@@ -2311,7 +2311,7 @@ class ReverseGravity : CommandBase
 
         if(tokens.size() > 1)
         {
-            if (!Num::IsDigitsOnly(tokens[1]))
+            if (!Num::IsNumerical(tokens[1]))
             {
                 sendClientMessage(player ,"The first parameter was not only digits");
                 return true;
