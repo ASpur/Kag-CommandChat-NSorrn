@@ -142,7 +142,7 @@ namespace Num
                 return playersoutone;//Return this array
             }
 
-            if(playerusername.substr(0, shortname.length()) == shortname)//If the players username contains shortname
+            if(playerusername.substr(0, shortname.size()) == shortname)//If the players username contains shortname
             {
                 playersout.push_back(player);//Put the array.
             }
@@ -155,17 +155,17 @@ namespace Num
     CPlayer@ getPlayerByShortUsername(string shortname)
     {
         array<CPlayer@> target_players = getPlayersByShortUsername(shortname);//Get a list of players that have this as the start of their username
-        if(target_players.length() > 1)//If there is more than 1 player in the list
+        if(target_players.size() > 1)//If there is more than 1 player in the list
         {
             string playernames = "";
-            for(int i = 0; i < target_players.length(); i++)//for every player in that list
+            for(int i = 0; i < target_players.size(); i++)//for every player in that list
             {
                 playernames += " : " + target_players[i].getUsername();//put their name in a string
             }
             print("There is more than one possible player for the player param" + playernames);//tell the client that these players in the string were found
             return @null;//don't send the message to chat, don't do anything else
         }
-        else if(target_players == null || target_players.length == 0)
+        else if(target_players == null || target_players.size() == 0)
         {
             print("No player was found for the player param.");
             return @null;
