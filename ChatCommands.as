@@ -939,7 +939,7 @@ namespace ReverseGravity
                     {
                         if(isServer())
                         {
-                            blobs[i].server_Hit(blobs[i], Vec2f(0,0), Vec2f(0,0), 0.1f, 0);
+                            blobs[i].server_Hit(blobs[i], Vec2f(0,0), Vec2f(0,0), 0.25f, 0);
                         }
                         if(blobs[i].hasScript("IgnoreDamage.as"))
                         {
