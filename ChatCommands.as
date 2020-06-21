@@ -809,30 +809,30 @@ namespace ReverseGravity
 
                     onblobcreatedleft.removeAt(i);
                     onblobcreated.removeAt(i);
-                }
-
-                if(gravity_reverse < 0)
-                {
-                    CMovement@ blob_movement = blob.getMovement();
-                    if(blob_movement != null)
+                
+                    if(gravity_reverse < 0)
                     {
-                        CSprite@ blob_sprite = blob.getSprite();
-                        if(blob_sprite != null)
-                        {  
-                            blob_sprite.RotateByDegrees(180.0f, -blob_sprite.getOffset());
-                            if(blob.hasScript("RunnerHead.as"))
-                            {
-                                blob.RemoveScript("RunnerHead.as");
-                                blob_sprite.RemoveScript("RunnerHead.as");
-                                blob_sprite.RemoveSpriteLayer("head");
-                            }
-                            
-                            if(blob_movement.hasScript("FaceAimPosition.as"))
-                            {
-                                blob_movement.RemoveScript("FaceAimPosition.as");
-                                blob.set_bool("hasFaceAimPos.as", true);
-                            }
-                        }   
+                        CMovement@ blob_movement = blob.getMovement();
+                        if(blob_movement != null)
+                        {
+                            CSprite@ blob_sprite = blob.getSprite();
+                            if(blob_sprite != null)
+                            {  
+                                blob_sprite.RotateByDegrees(180.0f, -blob_sprite.getOffset());
+                                if(blob.hasScript("RunnerHead.as"))
+                                {
+                                    blob.RemoveScript("RunnerHead.as");
+                                    blob_sprite.RemoveScript("RunnerHead.as");
+                                    blob_sprite.RemoveSpriteLayer("head");
+                                }
+                                
+                                if(blob_movement.hasScript("FaceAimPosition.as"))
+                                {
+                                    blob_movement.RemoveScript("FaceAimPosition.as");
+                                    blob.set_bool("hasFAP", true);
+                                }
+                            }   
+                        }
                     }
                 }
             }
@@ -876,10 +876,16 @@ namespace ReverseGravity
             array<CBlob@> blobs;
             getBlobs(blobs);
             bool every_3_ticks = false;
+            bool every_10_ticks = false;
             
             if(getGameTime() % 3 == 0)
             {
                 every_3_ticks = true;
+            }
+            
+            if(getGameTime() % 10 == 0)
+            {
+                every_10_ticks = true;
             }
 
             for(u16 i = 0; i < blobs.size(); i++)
@@ -891,53 +897,64 @@ namespace ReverseGravity
                     ReversedJumpingCode(blobs[i], moveVars);
                 }//Jumping upsidown
 
-                //Inverted facing direction
-                if(every_3_ticks && blobs[i].get_bool("hasFaceAimPos.as") && !blobs[i].hasTag("dead"))
+
+                if(every_3_ticks)
                 {
-                    bool facing = (blobs[i].getAimPos().x >= blobs[i].getPosition().x);
-                    
-                    blobs[i].SetFacingLeft(facing);
 
-                    // face for all attachments
-
-                    if (blobs[i].hasAttached())
+                    //Inverted facing direction
+                    if((blobs[i].getPlayer() != null || blobs[i].getBrain() != null) && blobs[i].get_bool("hasFAP") && !blobs[i].hasTag("dead"))
                     {
-                        AttachmentPoint@[] aps;
-                        if (blobs[i].getAttachmentPoints(@aps))
+                        bool facing = (blobs[i].getAimPos().x >= blobs[i].getPosition().x);
+                        
+                        blobs[i].SetFacingLeft(facing);
+
+                        // face for all attachments
+
+                        if (blobs[i].hasAttached())
                         {
-                            for (uint i = 0; i < aps.length; i++)
+                            AttachmentPoint@[] aps;
+                            if (blobs[i].getAttachmentPoints(@aps))
                             {
-                                AttachmentPoint@ ap = aps[i];
-                                if (ap.socket && ap.getOccupied() !is null)
+                                for (uint i = 0; i < aps.length; i++)
                                 {
-                                    ap.getOccupied().SetFacingLeft(facing);
+                                    AttachmentPoint@ ap = aps[i];
+                                    if (ap.socket && ap.getOccupied() !is null)
+                                    {
+                                        ap.getOccupied().SetFacingLeft(facing);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                }//Inverted facing direction
+                    }//Inverted facing direction
 
 
-                if(every_3_ticks && blobs[i].getPosition().y <= 18)//Void damage
-                {
-                    if(isServer())
-                    {
-                        blobs[i].server_Hit(blobs[i], Vec2f(0,0), Vec2f(0,0), 0.1f, 0);
-                    }
-                    if(blobs[i].hasScript("IgnoreDamage.as"))
-                    {
-                        blobs[i].RemoveScript("IgnoreDamage.as");
-                    }
-                }
-
-                CShape@ blob_shape = blobs[i].getShape();
-
-                if(blob_shape != null && !blob_shape.isStatic() && blobs[i].getName() == "seed")
-                {
-                    blob_shape.SetStatic(true);
                 }
                 
+
+                if(every_10_ticks)
+                {
+                    
+                    if(blobs[i].getPosition().y <= 18 && !blobs[i].isInInventory())//Void damage
+                    {
+                        if(isServer())
+                        {
+                            blobs[i].server_Hit(blobs[i], Vec2f(0,0), Vec2f(0,0), 0.1f, 0);
+                        }
+                        if(blobs[i].hasScript("IgnoreDamage.as"))
+                        {
+                            blobs[i].RemoveScript("IgnoreDamage.as");
+                        }
+                    }
+
+                    CShape@ blob_shape = blobs[i].getShape();
+                    if(blob_shape != null && !blob_shape.isStatic() && blobs[i].getName() == "seed")//Stop seeds
+                    {
+                        blob_shape.SetStatic(true);
+                    }
+                }
+
+
             }
         }
     }
@@ -976,12 +993,12 @@ namespace ReverseGravity
                         if(blob_movement.hasScript("FaceAimPosition.as"))
                         {
                             blob_movement.RemoveScript("FaceAimPosition.as");
-                            blobs[i].set_bool("hasFaceAimPos.as", true);
+                            blobs[i].set_bool("hasFAP", true);
                         }
-                        else if(blobs[i].get_bool("hasFaceAimPos.as"))
+                        else if(blobs[i].get_bool("hasFAP"))
                         {
                             blob_movement.AddScript("FaceAimPosition.as");
-                            blobs[i].set_bool("hasFaceAimPos.as", false);
+                            blobs[i].set_bool("hasFAP", false);
                             blobs[i].AddScript("RunnerHead.as");
                             blob_sprite.AddScript("RunnerHead.as");
                         }
