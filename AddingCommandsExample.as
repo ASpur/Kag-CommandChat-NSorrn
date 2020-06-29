@@ -12,7 +12,7 @@ class SomeCommand : CommandBase
 
     }
 
-    bool CommandCode(CRules@ this, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
         sendClientMessage(player, "I command the command to be commanded.");
         return true;
