@@ -1,7 +1,85 @@
 #include "CommandChatCommon.as";
 #include "NumanLib.as";
 
-//Probably uneeded
+//!test (number) (playerusername) - Read the stuff below to be informed on how to make commands.
+class Test : CommandBase
+{
+    Test()//This happens only when this command is first added to the commands array.
+    {
+        names[0] = "test".getHash();//Assign the name used to use this command. Sending !test in the chat will activate this command
+        names[1] = "testy".getHash();//Optionally, !testy can also be used to use this command
+        names[2] = "testa".getHash();
+        names[3] = "testo".getHash();
+        names.push_back("testin".getHash());//If you want to add more than 4 names, do it like this.
+    }
+    void Setup(string[]@ tokens) override
+    {        
+        permlevel = pAdmin;//Assigns the permission level to be admin. You must be an admin to use this command.
+			
+        commandtype = Testing;//The type of command this is. This is only useful in displaying things in the interactive help menu (not yet made). So atm this does nothing.
+
+        no_sv_test = true;//All commands besides those specified with no_sv_test = true; can be used when sv_test is 1. This command cannot be used when sv_test is 1.
+    
+        blob_must_exist = true;//If this is true, when the player's blob does not exist the command code will not run and the player will be informed that their blob is null.
+
+        minimum_parameter_count = 0;//Specifies at minimum how many parameters a command must have. If the number of parameters is less than the minimum, some code prevents the command from running and tells the user.
+
+        if(tokens.size() > 2)//This is an optional part. If there are more then 2 tokens, do the code inside. For example "!test 99 the1sad1numanator".  This has 3 tokens, 1: !test 2: 99 3: the1sad1numanator
+        {//This is most useful when having a command that by default specifies the player that used it, but can specify another player with an additional parameter.
+
+            blob_must_exist = false;//The player does not have to have a blob to use this command anymore.
+
+            permlevel = pSuperAdmin;//Reassign the perm level to be SuperAdmin. You must now be a SuperAdmin to use this command.
+            
+            target_player_slot = 2;//Specifies which token the playerusername is on. In this case it is the third token, but since things start from 0 in programming we assign it to 2. 
+            //Specifying this tells some code to figure out what player has the specified username and put it into the "target_player" variable for later use in CommandCode. 
+            //If the player does not exist, it will not run CommandCode and the client that ran this command will be informed.
+
+            target_player_blob_param = true;//After getting the target_player, making this variable true will get the blob from the target_player and put it into the variable "target_blob".
+            //Like the target_player, if the target_blob does not exist, CommandCode will not run and the client will be informed that the target_player had no blob.
+            //These target_ variables are further used in CommandCode, look there if you are still confused.
+
+            //Simply put, using target_player and target_blob allows you to not need to do null checks. It handles all that itself. 
+        }
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        sendClientMessage(player, "You just used the test command.");//This method sends a message to the specified player. the "player" variable is the player that used the !test command.
+
+        if(tokens.length > 1)//If there is more than a single token. The first token is command itself, and the second token is the number in this case.
+        {
+            string string_number = tokens[1];//Here we get the very first parameter, the number, and put it in the string.
+
+            u8 number = parseInt(string_number);//We take the very first parameter and turn it into an int variable with the name "number".
+            
+            sendClientMessage(player, "There is a parameter specified. The first parameter is: " + number);//Message the player that sent this command this.
+
+            if (tokens.length > 2)//If there are more than two tokens. The first token is the command itself, the second is the number, the third is the specified player.
+            {
+                sendClientMessage(player, "There are two parameters specified, the second parameter is: " + tokens[2], SColor(255, 0, 0, 153));//This time we specify a color.
+            
+                //Tip, you do not need to check if the target_player or target_blob exist, that is already handled by something else.
+
+                target_blob.server_setTeamNum(number);//As we specified the target_player_blob_param = true; when there are more than two tokens, we have the blob of the target_player right here.
+
+                sendClientMessage(target_player, "Your team has been changed to " + number + " by " + player.getUsername() + " who is on team " + team);//This sends a message to the target_player
+            }
+
+            //If there is only 1 parameter (2 tokens) do this.
+            else
+            {
+                blob.server_setTeamNum(number);//Set the player's blob that sent this command to the specified team.
+            }
+        }
+
+        return true;//Returning true will send the message to chat. Only if you are a superadmin and have hidecomms on will it not.
+        //return false;//Returning false will not send the message to chat.
+
+    }
+}
+
+
 class C_Debug : CommandBase
 {
     C_Debug()
@@ -436,84 +514,6 @@ class Crate : CommandBase
         }
 
         return true;
-    }
-}
-
-//!test (number) (playerusername) - Read the stuff below to be informed on how to make commands.
-class Test : CommandBase
-{
-    Test()//This happens only when this command is first added to the commands array.
-    {
-        names[0] = "test".getHash();//Assign the name used to use this command. Sending !test in the chat will activate this command
-        names[1] = "testy".getHash();//Optionally, !testy can also be used to use this command
-        names[2] = "testa".getHash();
-        names[3] = "testo".getHash();
-        names.push_back("testin".getHash());//If you want to add more than 4 names, do it like this.
-    }
-    void Setup(string[]@ tokens) override
-    {        
-        permlevel = pAdmin;//Assigns the permission level to be admin. You must be an admin to use this command.
-			
-        commandtype = Testing;//The type of command this is. This is only useful in displaying things in the interactive help menu (not yet made). So atm this does nothing.
-
-        no_sv_test = true;//All commands besides those specified with no_sv_test = true; can be used when sv_test is 1. This command cannot be used when sv_test is 1.
-    
-        blob_must_exist = true;//If this is true, when the player's blob does not exist the command code will not run and the player will be informed that their blob is null.
-
-        minimum_parameter_count = 0;//Specifies at minimum how many parameters a command must have. If the number of parameters is less than the minimum, some code prevents the command from running and tells the user.
-
-        if(tokens.size() > 2)//This is an optional part. If there are more then 2 tokens, do the code inside. For example "!test 99 the1sad1numanator".  This has 3 tokens, 1: !test 2: 99 3: the1sad1numanator
-        {//This is most useful when having a command that by default specifies the player that used it, but can specify another player with an additional parameter.
-
-            blob_must_exist = false;//The player does not have to have a blob to use this command anymore.
-
-            permlevel = pSuperAdmin;//Reassign the perm level to be SuperAdmin. You must now be a SuperAdmin to use this command.
-            
-            target_player_slot = 2;//Specifies which token the playerusername is on. In this case it is the third token, but since things start from 0 in programming we assign it to 2. 
-            //Specifying this tells some code to figure out what player has the specified username and put it into the "target_player" variable for later use in CommandCode. 
-            //If the player does not exist, it will not run CommandCode and the client that ran this command will be informed.
-
-            target_player_blob_param = true;//After getting the target_player, making this variable true will get the blob from the target_player and put it into the variable "target_blob".
-            //Like the target_player, if the target_blob does not exist, CommandCode will not run and the client will be informed that the target_player had no blob.
-            //These target_ variables are further used in CommandCode, look there if you are still confused.
-
-            //Simply put, using target_player and target_blob allows you to not need to do null checks. It handles all that itself. 
-        }
-    }
-
-    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
-    {
-        sendClientMessage(player, "You just used the test command.");//This method sends a message to the specified player. the "player" variable is the player that used the !test command.
-
-        if(tokens.length > 1)//If there is more than a single token. The first token is command itself, and the second token is the number in this case.
-        {
-            string string_number = tokens[1];//Here we get the very first parameter, the number, and put it in the string.
-
-            u8 number = parseInt(string_number);//We take the very first parameter and turn it into an int variable with the name "number".
-            
-            sendClientMessage(player, "There is a parameter specified. The first parameter is: " + number);//Message the player that sent this command this.
-
-            if (tokens.length > 2)//If there are more than two tokens. The first token is the command itself, the second is the number, the third is the specified player.
-            {
-                sendClientMessage(player, "There are two parameters specified, the second parameter is: " + tokens[2], SColor(255, 0, 0, 153));//This time we specify a color.
-            
-                //Tip, you do not need to check if the target_player or target_blob exist, that is already handled by something else.
-
-                target_blob.server_setTeamNum(number);//As we specified the target_player_blob_param = true; when there are more than two tokens, we have the blob of the target_player right here.
-
-                sendClientMessage(target_player, "Your team has been changed to " + number + " by " + player.getUsername() + " who is on team " + team);//This sends a message to the target_player
-            }
-
-            //If there is only 1 parameter (2 tokens) do this.
-            else
-            {
-                blob.server_setTeamNum(number);//Set the player's blob that sent this command to the specified team.
-            }
-        }
-
-        return true;//Returning true will send the message to chat. Only if you are a superadmin and have hidecomms on will it not.
-        //return false;//Returning false will not send the message to chat.
-
     }
 }
 //!commands - Help, I'm being held hostage by my own brain 

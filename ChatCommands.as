@@ -87,6 +87,8 @@
 
 //Forcerespawn spawns the player on the ground.
 
+//make sure you can't abuse the lantern code
+
 
 
 
