@@ -301,11 +301,11 @@ namespace Num
     //Rounds by the given multiple. If the multiple is 5 and the value is 277, this will return 275. If the multiple is 10 and the value is 277, this would return 280. 
     float RoundByMultiple(float value, float multiple = 10.0f)
     {
-        return Maths::Roundf(round(value / multiple) * multiple);
+        return Maths::Roundf(value / multiple * multiple);
     }
     int RoundByMultiple(int value, int multiple = 10)//Same as above but for ints.
     {
-        return Maths::Round(round(value / multiple) * multiple);
+        return Maths::Round(value / multiple * multiple);
     }
     //Same as above except instead of rounding up, it always rounds down.
     float RoundDown(float value, float multiple = 10.0f)
