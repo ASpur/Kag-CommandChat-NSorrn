@@ -281,4 +281,47 @@ namespace Num
 
         return sorted_array;
     }
+    
+    //1: The point to check if it is within the radius
+    //2: The center of the radius (or circle if you want to call it a circle)
+    //3: The radius.
+    //Returns if the point is within the radius
+    bool isPointInRadius(Vec2f point, Vec2f radius_center, float radius)
+    {
+        if((point.x - radius_center.x)^2 + (point.y - radius_center.y)^2 < radius^2)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    //1: Value to be rounded.
+    //2: Multiple to be rounded by.
+    //Rounds by the given multiple. If the multiple is 5 and the value is 277, this will return 275. If the multiple is 10 and the value is 277, this would return 280. 
+    float RoundByMultiple(float value, float multiple = 10.0f)
+    {
+        return Maths::Roundf(round(value / multiple) * multiple);
+    }
+    int RoundByMultiple(int value, int multiple = 10)//Same as above but for ints.
+    {
+        return Maths::Round(round(value / multiple) * multiple);
+    }
+    //Same as above except instead of rounding up, it always rounds down.
+    float RoundDown(float value, float multiple = 10.0f)
+    {
+        return value - value % multiple;
+    }
+    int RoundDown(int value, int multiple = 10)//For ints
+    {
+        return value - value % multiple;
+    }
+    float Floor(float value, float multiple = 10.0f)//Alias
+    {
+        return value - value % multiple;
+    }
+    int Floor(int value, int multiple = 10)//Alias for ints
+    {
+        return value - value % multiple;    
+    }
 }
