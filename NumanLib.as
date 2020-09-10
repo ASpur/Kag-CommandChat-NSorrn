@@ -325,3 +325,45 @@ namespace Num
         return value - value % multiple;    
     }
 }
+
+//IDEAS
+
+/*
+Numan_library. Including 
+1. Is any key pressed (can input blob or CControls) Is any mouse button pressed. etc.
+2. Input an array of control enums to check if any are pressed.
+3. Get ground under point. (see my version of wizard wars in SpellCommon.as at the bottom)
+4. Is string a 0 or 1 (outputs bool if is not a 0 or 1). takes in a referenced bool, changes it to true or falsed based on the inputted string
+5. Put string array into one big string.
+6. Easy on command method/function. Make it possible to send around things via methods and without using onCommand stuff. only CBitStream.
+7. Easy way to display contents of array. Make a bunch of methods for each datatype, printing all of them out.
+8. Get all players in array, arrange from closest to furthest (only if they have blobs). (CommandChat.as)
+8.5 Sort an array of blobs by distance. Include optional team parameter (CommandChat.as)
+8.75 Sort array of Vectors
+9. Enum array of every KEY_CODE
+10. Is block above? check every block above and check if it is the requested one. return true or false.
+11. Is block below? 
+12. Is block left?
+13. Is block right?(maybe merge into one with a directional parameter)
+#14. Send chat message to player (CommandChat.as)
+#15. Send chat message to all players 
+#17. Get player associated with id.
+#18. Time since map loaded.
+#19. Get blocks in radius. (blocky radius, jagged array of blocks)
+#20. Get if there are blocks between two given points. optional "give" value that effectively shrinks the size of all the blocks corners. (it's a quality of life thing)
+
+
+
+
+
+
+DrawTextWithWidth(string text, Vec2f pos, SColor color, float width) - Caps width, note this will require an array to save draw text stuff as the calculations should not be done every render call.
+
+
+
+
+
+
+
+
+*/
