@@ -708,43 +708,87 @@ class Announce : CommandBase
     }
 }
 
-//!getplayerblobtag "type" "tagname" (PLAYERNAME) - Gets the set value of a type from a player's blob. 
-class GetPlayerBlobTag : CommandBase
+//!gettag "type" "tagname" (BlobID)/(PlayerID)/(PlayerName) - Gets the set value of a type from a player's blob. types can equal "u8, s8, u16, s16, u32, s32, f32, bool, string, tag"
+class GetTag : CommandBase
 {
     void Setup(string[]@ tokens) override
     {
         if(names[0] == 0)
         {
-            names[0] = "getplayerblobtag".getHash();
-            names[1] = "getptag".getHash();
+            names[0] = "getblobtag".getHash();
+            names[1] = "gettag".getHash();
         }
 
         permlevel = pAdmin;
         minimum_parameter_count = 2;
         commandtype = Debug;
 
-        if(tokens.size() > 3)
+        if(tokens.size() > 3)//Is there a ending token that specifies what get the tag from.
         {
-            blob_must_exist = false;
-            target_player_slot = 3;
-            target_player_blob_param = true;
+            blob_must_exist = false;//There is a specified blob/player. The blob doesn't need to exist.
+
+            if(Num::IsNumeric(tokens[3]))//Is this a netid?
+            {
+                uint netid = parseInt(tokens[3]);//Get the netid.
+
+                CBlob@ _blob = getBlobByNetworkID(netid);//Is this a blob's netid?
+                
+                if(_blob == null)//Not a blob's netid?
+                {
+                    CPlayer@ _player = @getPlayerByNetworkId(netid);//Is this a netid for a player?
+                    if(_player != null)
+                    {
+                        //Success, overwrite the token with the player's username. and tell it to get the player behind.
+                        tokens[3] = _player.getUsername();
+                        target_player_slot = 3;
+                        target_player_blob_param = true;
+                    }
+                    else
+                    {
+                        //Veto out.
+                    }
+                }
+                else//This is a blob's netid
+                {
+                    //No need to do anything.
+                }
+            }
+            else//This is not numeric.
+            {
+                //It's probably a username then, try and get the player with this username and their blob.
+                target_player_slot = 3;
+                target_player_blob_param = true;
+            }
         }
     }
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        string message = "";
-
-        if(message != "")
+        if(tokens.size() == 3)//No specified player? 
         {
-            sendClientMessage(player, message);
+            @target_blob = @blob;//Set to the current player's blob.
+            @target_player = @player;//Set to the current player.
         }
+        else if(target_player == null//No player? It's a netid of a blob?
+        && Num::IsNumeric(tokens[4]))//And the forth token is a number.
+        {
+            CBlob@ _blob = getBlobByNetworkID(parseInt(tokens[4]));//Parse it and get the blob from the netid.
+            @target_blob = @_blob;
+        }
+
+        if(target_blob == null)
+        {
+            sendClientMessage(player, "GetTag command for some reason didn't have a target_blob");
+            return true;
+        }
+
+        sendClientMessage(player, GetSpecificBlobTag(target_blob, tokens[1], tokens[2]));
 
         return true;
     }
 }
 
-//!tag "type" "tagname" "value" (netid)/(playername) - types can equal "u8, s8, u16, s16, u32, s32, f32, bool, string, tag"
+//!tag "type" "tagname" "value" (BlobID)/(PlayerID)/(PlayerName) - types can equal "u8, s8, u16, s16, u32, s32, f32, bool, string, tag"
 //by default if you don't specify the 4th parameter, it tags the using player's blob.
 //
 class TagThing : CommandBase
@@ -785,9 +829,13 @@ class TagThing : CommandBase
                     if(_player != null)
                     {
                         //Success, overwrite the token with the player's username. and tell it to get the player behind.
-                        tokens[4] = _player.getUsername();
-                        target_player_slot = 4;
+                        tokens[3] = _player.getUsername();
+                        target_player_slot = 3;
                         target_player_blob_param = true;
+                    }
+                    else
+                    {
+                        //Veto out.
                     }
                 }
                 else//This is a blob's netid
@@ -798,7 +846,7 @@ class TagThing : CommandBase
             else//This is not numeric.
             {
                 //It's probably a username then, try and get the player with this username and their blob.
-                target_player_slot = 4;
+                target_player_slot = 3;
                 target_player_blob_param = true;
             }
         }
@@ -807,7 +855,7 @@ class TagThing : CommandBase
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
         string message = "";
-        if(tokens.length == 4)//No specified player? 
+        if(tokens.size() == 4)//No specified player? 
         {
             @target_blob = @blob;//Set to the current player's blob.
             @target_player = @player;//Set to the current player.

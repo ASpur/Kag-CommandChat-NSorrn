@@ -195,6 +195,7 @@ void onInit(CRules@ this)
         AddRobot(),
         ForceRespawn(),
         Give(),
+        GetTag(),
         TagThing(),
         HeldBlobNetID(),
         PlayerBlobNetID(),
