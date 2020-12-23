@@ -378,6 +378,61 @@ string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string i
     return "";
 }
 
+string GetSpecificBlobTag(CBlob@ targetblob, string typein, string namein)
+{
+    if(targetblob == null)
+    {
+        return "something weird happened when getting tags";
+    }
+
+    if(typein == "u8")
+    {
+        return "" + targetblob.get_u8(namein);
+    }
+    else if(typein == "s8")
+    {
+        return "" + targetblob.get_s8(namein);
+    }
+    else if(typein == "u16")
+    {
+        return "" + targetblob.get_u16(namein);
+    }
+    else if(typein == "s16")
+    {
+        return "" + targetblob.get_s16(namein);
+    }
+    else if(typein == "u32")
+    {
+        return "" + targetblob.get_u32(namein);
+    }
+    else if(typein == "s32")
+    {
+        return "" + targetblob.get_s32(namein);
+    }
+    else if(typein == "f32")
+    {
+        return "" + targetblob.get_f32(namein);
+    }
+    else if(typein == "bool" || typein == "b")
+    {
+        return "" + targetblob.get_bool(namein);
+    }
+    else if(typein == "string")
+    {
+        return "" + targetblob.get_string(namein);
+    }
+    else if(typein == "tag")
+    {
+        return "" + targetblob.hasTag(namein);
+    }
+    else
+    {
+        return "typein " + typein + " is not one of the types you can use.";
+    }
+    
+    return "";
+}
+
 
 //When getting blobs, returns netid's
 //When getting players, returns usernames

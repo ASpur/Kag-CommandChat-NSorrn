@@ -615,6 +615,7 @@ class PlayerBlobNetID : CommandBase
             names[0] = "playerblobnetid".getHash();
             names[1] = "playerblobid".getHash();
             names[2] = "getblobid".getHash();
+            names[3] = "blobid".getHash();
         }
 
         commandtype = Debug;
@@ -738,15 +739,13 @@ class TagPlayerBlob : CommandBase
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
         string message = "";
-        if(tokens.length > 4)
+        if(tokens.length == 4)//No specified player? 
         {
-            message = TagSpecificBlob(target_blob, tokens[1], tokens[2], tokens[3]);
+            @target_blob = @blob;//Set to the current player's blob.
+            @target_player = @player;//Set to the current player.
         }
-        else
-        {
-            message = TagSpecificBlob(blob, tokens[1], tokens[2], tokens[3]);
-            @target_player = @player;
-        }
+        
+        message = TagSpecificBlob(target_blob, tokens[1], tokens[2], tokens[3]);//If this returns a string that isn't empty, an error happened.
 
         if(message == "")
         {
@@ -758,11 +757,11 @@ class TagPlayerBlob : CommandBase
                     tag_or_untag = "untagged";
                 }
 
-                message = "player " + target_player.getUsername() + " has had their blob " + tag_or_untag + " with " + tokens[2];
+                message = "player " + target_player.getUsername() + " has had their blob " + tag_or_untag + " with " + tokens[3];
             }
             else
             {
-                message = "player " + target_player.getUsername() + " has their blob's " + tokens[1] + " value with the key " + tokens[2] + " set to " + tokens[3];
+                message = "player " + target_player.getUsername() + " has their blob's " + tokens[1] + " value with the key " + tokens[2] + " set to " + GetSpecificBlobTag(target_blob, tokens[1], tokens[2]);
             }
         }
 
@@ -807,7 +806,7 @@ class TagBlob : CommandBase
         string message = "";
         if(netidblob != null)
         {
-            message = TagSpecificBlob(netidblob, tokens[1], tokens[2], tokens[3]);
+            message = TagSpecificBlob(netidblob, tokens[1], tokens[2], tokens[3]);//If this returns a string that isn't empty, an error happened.
         }
         else
         {
@@ -818,17 +817,17 @@ class TagBlob : CommandBase
         {
             if(tokens[1] == "tag")
             {
-                string tag_or_untag = "tag";
+                string tag_or_untag = "tagged";
                 if (tokens[3] == "false" || tokens[3] == "0")
                 {
-                    tag_or_untag = "untag";
+                    tag_or_untag = "untagged";
                 }
 
                 message = "The blob with the NetID " + tokens[4] + " has been " + tag_or_untag + " with " + tokens[2];
             }
             else
             {
-                message = "The blob with the NetID " + tokens[4] + " has had their " + tokens[1] + " value with the key " + tokens[2] + " set to " + tokens[3];
+                message = "The blob with the NetID " + tokens[4] + " has had their " + tokens[1] + " value with the key " + tokens[2] + " set to " + GetSpecificBlobTag(netidblob, tokens[1], tokens[2]);
             }
         }
 
