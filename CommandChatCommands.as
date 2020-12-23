@@ -578,6 +578,7 @@ class PlayerNetID : CommandBase
         {
             names[0] = "playerid".getHash();
             names[1] = "playernetid".getHash();
+            names[2] = "getplayerid".getHash();
         }
         
         blob_must_exist = false;
@@ -613,6 +614,7 @@ class PlayerBlobNetID : CommandBase
         {
             names[0] = "playerblobnetid".getHash();
             names[1] = "playerblobid".getHash();
+            names[2] = "getblobid".getHash();
         }
 
         commandtype = Debug;
@@ -712,11 +714,18 @@ class TagPlayerBlob : CommandBase
         if(names[0] == 0)
         {
             names[0] = "tagplayerblob".getHash();
+            names[1] = "tagpbool".getHash();//Special logic. Inverts the currently existing value to this tag. Don't add a type or value with this one. Just do "!tagpbool typename" and it will invert the value.
         }
 
         permlevel = pAdmin;
         minimum_parameter_count = 3;
         commandtype = Debug;
+
+        if(tokens[0] == "tagpbool")//Special logic.
+        {
+            tokens.insertAt(1, "bool");
+            tokens.insertAt(3, "invert");
+        }
 
         if(tokens.size() > 4)
         {
@@ -773,8 +782,16 @@ class TagBlob : CommandBase
         if(names[0] == 0)
         {
             names[0] = "tagblob".getHash();
+            names[1] = "tag".getHash();
+            names[2] = "tagbool".getHash();//Special logic. This allows you to do "!tagbool tagname blobnetid". No type nor value needed. It inverts the current bool value.
         }
         
+        if(tokens[0] == "tagbool")//Special logic.
+        {
+            tokens.insertAt(1, "bool");
+            tokens.insertAt(3, "invert");
+        }
+
         blob_must_exist = false;
         permlevel = pAdmin;
         minimum_parameter_count = 4;
@@ -1706,6 +1723,7 @@ class ForceRespawn : CommandBase
     ForceRespawn()
     {
         names[0] = "forcerespawn".getHash();
+        names[0] = "fr".getHash();
     }
 
     void Setup(string[]@ tokens) override

@@ -328,7 +328,7 @@ string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string i
         float innum = parseFloat(input);
         targetblob.set_f32(namein, innum);
     }
-    else if(typein == "bool")
+    else if(typein == "bool" || typein == "b")
     {
         
         if (input == "true" || input == "1")
@@ -338,6 +338,11 @@ string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string i
         else if (input == "false" || input == "0")
         {
             targetblob.set_bool(namein, false);
+        }
+        else if (input == "invert")
+        {
+            bool _value = targetblob.get_bool(namein);
+            targetblob.set_bool(namein, !_value);
         }
         else
         {
