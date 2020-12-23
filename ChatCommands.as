@@ -9,6 +9,7 @@
 //Turn all commands into methods to allow other commands to use each other and the ability to take out commands for use in other mods.
 //Have an onTick method that runs commands by the amount of delay they requested. i.e a single tick of delay for spawning bots to allow them to be spawned with a blob.
 //Clean up AddBot
+//Make Setup return a bool value, in case you want to fail the command before it starts.
 
 //!timespeed SPEED
 
@@ -34,9 +35,6 @@
 //New help menu, preferably interactive. Button for all commands you can use, button for each perm level of commands.
 
 //!actor, but don't kill the old blob
-
-//!gettag 
-//Just like !tagblob but instead getting the value
 
 //!setheadnum USERNAME HEADNUMBER
 //!setsex USERNAME BOY||GIRL
@@ -68,6 +66,10 @@
 //!blobwithscripts {scripts
 //Ex: !blobwithscripts AimFacePos.as !FleshHitEffects.as Eatable.as
 //Starting a script with ! removes the script if the blob comes with it.
+
+
+
+
 
 //IDEAS: 
 
@@ -193,8 +195,7 @@ void onInit(CRules@ this)
         AddRobot(),
         ForceRespawn(),
         Give(),
-        TagBlob(),
-        TagPlayerBlob(),
+        TagThing(),
         HeldBlobNetID(),
         PlayerBlobNetID(),
         PlayerNetID(),

@@ -707,32 +707,100 @@ class Announce : CommandBase
         return true;
     }
 }
-//!tagplayerblob "type" "tagname" "value" (PLAYERNAME) - defaults to yourself, type can equal "u8, s8, u16, s16, u32, s32, f32, bool, string, tag"
-class TagPlayerBlob : CommandBase
+
+//!getplayerblobtag "type" "tagname" (PLAYERNAME) - Gets the set value of a type from a player's blob. 
+class GetPlayerBlobTag : CommandBase
 {
     void Setup(string[]@ tokens) override
     {
         if(names[0] == 0)
         {
-            names[0] = "tagplayerblob".getHash();
-            names[1] = "tagpbool".getHash();//Special logic. Inverts the currently existing value to this tag. Don't add a type or value with this one. Just do "!tagpbool typename" and it will invert the value.
+            names[0] = "getplayerblobtag".getHash();
+            names[1] = "getptag".getHash();
+        }
+
+        permlevel = pAdmin;
+        minimum_parameter_count = 2;
+        commandtype = Debug;
+
+        if(tokens.size() > 3)
+        {
+            blob_must_exist = false;
+            target_player_slot = 3;
+            target_player_blob_param = true;
+        }
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        string message = "";
+
+        if(message != "")
+        {
+            sendClientMessage(player, message);
+        }
+
+        return true;
+    }
+}
+
+//!tag "type" "tagname" "value" (netid)/(playername) - types can equal "u8, s8, u16, s16, u32, s32, f32, bool, string, tag"
+//by default if you don't specify the 4th parameter, it tags the using player's blob.
+//
+class TagThing : CommandBase
+{
+    void Setup(string[]@ tokens) override
+    {
+        if(names[0] == 0)
+        {
+            names[0] = "tag".getHash();
+            names[1] = "tagp".getHash();//Specifically tags the player, not the blob of a player.
+            names[2] = "tagbool".getHash();//Special logic. Inverts the currently existing value to this tag. Don't add a type or value with this one. Just do "!tagpbool typename" and it will invert the value.
+            names[3] = "tagpbool".getHash();//Specially tags the player with a bool, not the blob of a player.
         }
 
         permlevel = pAdmin;
         minimum_parameter_count = 3;
         commandtype = Debug;
 
-        if(tokens[0] == "tagpbool")//Special logic.
+        if(tokens[0] == "tagbool" || tokens[0] == "tagpbool")//Special logic.
         {
             tokens.insertAt(1, "bool");
             tokens.insertAt(3, "invert");
         }
 
-        if(tokens.size() > 4)
+        if(tokens.size() > 4)//Is there a ending token that specifies what to tag.
         {
-            blob_must_exist = false;
-            target_player_slot = 4;
-            target_player_blob_param = true;
+            blob_must_exist = false;//There is a specified blob/player. The blob doesn't need to exist.
+
+            if(Num::IsNumeric(tokens[4]))//Is this a netid?
+            {
+                uint netid = parseInt(tokens[4]);//Get the netid.
+
+                CBlob@ _blob = getBlobByNetworkID(netid);//Is this a blob's netid?
+                
+                if(_blob == null)//Not a blob's netid?
+                {
+                    CPlayer@ _player = @getPlayerByNetworkId(netid);//Is this a netid for a player?
+                    if(_player != null)
+                    {
+                        //Success, overwrite the token with the player's username. and tell it to get the player behind.
+                        tokens[4] = _player.getUsername();
+                        target_player_slot = 4;
+                        target_player_blob_param = true;
+                    }
+                }
+                else//This is a blob's netid
+                {
+                    //No need to do anything.
+                }
+            }
+            else//This is not numeric.
+            {
+                //It's probably a username then, try and get the player with this username and their blob.
+                target_player_slot = 4;
+                target_player_blob_param = true;
+            }
         }
     }
 
@@ -744,91 +812,64 @@ class TagPlayerBlob : CommandBase
             @target_blob = @blob;//Set to the current player's blob.
             @target_player = @player;//Set to the current player.
         }
-        
-        message = TagSpecificBlob(target_blob, tokens[1], tokens[2], tokens[3]);//If this returns a string that isn't empty, an error happened.
 
-        if(message == "")
+        if(tokens[0] == "tag" || tokens[0] == "tagbool")//Tag a blob?
         {
-            if(tokens[1] == "tag")
+            if(target_blob == null)//Are we getting the blob by netid?
             {
-                string tag_or_untag = "tagged";
-                if (tokens[3] == "false" || tokens[3] == "0")
+                @target_blob = @getBlobByNetworkID(parseInt(tokens[4]));//Yes, fetch the blob.
+                if(target_blob == null)//If we somehow didn't get the blob by netid.
                 {
-                    tag_or_untag = "untagged";
+                    message = "The blob with the specified NetID " + tokens[4] + " was null/not found.";
                 }
-
-                message = "player " + target_player.getUsername() + " has had their blob " + tag_or_untag + " with " + tokens[3];
             }
-            else
+
+            if(message == "")//No error
             {
-                message = "player " + target_player.getUsername() + " has their blob's " + tokens[1] + " value with the key " + tokens[2] + " set to " + GetSpecificBlobTag(target_blob, tokens[1], tokens[2]);
+                message = TagSpecificBlob(target_blob, tokens[1], tokens[2], tokens[3]);//If this returns a string that isn't empty, an error happened.
             }
-        }
 
-        if(message != "")
-        {
-            sendClientMessage(player, message);
-        }
-
-        return true;
-    }
-}
-//!tagblob "type" "tagname" "value" "blobnetid" - type can equal "u8, s8, u16, s16, u32, s32, f32, bool, string, tag"
-class TagBlob : CommandBase
-{
-    void Setup(string[]@ tokens) override
-    {
-        if(names[0] == 0)
-        {
-            names[0] = "tagblob".getHash();
-            names[1] = "tag".getHash();
-            names[2] = "tagbool".getHash();//Special logic. This allows you to do "!tagbool tagname blobnetid". No type nor value needed. It inverts the current bool value.
-        }
-        
-        if(tokens[0] == "tagbool")//Special logic.
-        {
-            tokens.insertAt(1, "bool");
-            tokens.insertAt(3, "invert");
-        }
-
-        blob_must_exist = false;
-        permlevel = pAdmin;
-        minimum_parameter_count = 4;
-        commandtype = Debug;
-    }
-
-    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
-    {
-        u16 netid = parseInt(tokens[4]);
-
-        CBlob@ netidblob = getBlobByNetworkID(netid);
-
-        string message = "";
-        if(netidblob != null)
-        {
-            message = TagSpecificBlob(netidblob, tokens[1], tokens[2], tokens[3]);//If this returns a string that isn't empty, an error happened.
-        }
-        else
-        {
-            message = "The blob with the specified NetID " + tokens[4] + " was null/not found.";
-        }
-
-        if(message == "")
-        {
-            if(tokens[1] == "tag")
+            if(message == "")//Still no errors
             {
-                string tag_or_untag = "tagged";
-                if (tokens[3] == "false" || tokens[3] == "0")
+                if(target_player != null)//Tagging a player's blob?
                 {
-                    tag_or_untag = "untagged";
-                }
+                    if(tokens[1] == "tag")
+                    {
+                        string tag_or_untag = "tagged";
+                        if (tokens[3] == "false" || tokens[3] == "0")
+                        {
+                            tag_or_untag = "untagged";
+                        }
 
-                message = "The blob with the NetID " + tokens[4] + " has been " + tag_or_untag + " with " + tokens[2];
+                        message = target_player.getUsername() + " has had their blob " + tag_or_untag + " with " + tokens[3];
+                    }
+                    else
+                    {
+                        message = target_player.getUsername() + " has their blob's " + tokens[1] + " value with the key " + tokens[2] + " set to " + GetSpecificBlobTag(target_blob, tokens[1], tokens[2]);
+                    }
+                }
+                else//Tagging a blob via a netid?
+                {
+                    if(tokens[1] == "tag")
+                    {
+                        string tag_or_untag = "tagged";
+                        if (tokens[3] == "false" || tokens[3] == "0")
+                        {
+                            tag_or_untag = "untagged";
+                        }
+
+                        message = "The blob with the NetID " + tokens[4] + " has been " + tag_or_untag + " with " + tokens[2];
+                    }
+                    else
+                    {
+                        message = "The blob with the NetID " + tokens[4] + " has had their " + tokens[1] + " value with the key " + tokens[2] + " set to " + GetSpecificBlobTag(target_blob, tokens[1], tokens[2]);
+                    }
+                }
             }
-            else
-            {
-                message = "The blob with the NetID " + tokens[4] + " has had their " + tokens[1] + " value with the key " + tokens[2] + " set to " + GetSpecificBlobTag(netidblob, tokens[1], tokens[2]);
-            }
+        }
+        else if (tokens[0] == "tagp" || tokens[0] == "tagpbool")//Tag a player?
+        {
+            message = "Tagging players is still not supported. Bug TheSadNuman#1662 on discord if you want me to make it work, but I didn't think anyone would use it so I have not spent the time to add it.";
         }
 
         if(message != "")

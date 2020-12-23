@@ -341,12 +341,11 @@ string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string i
         }
         else if (input == "invert")
         {
-            bool _value = targetblob.get_bool(namein);
-            targetblob.set_bool(namein, !_value);
+            targetblob.set_bool(namein, !targetblob.get_bool(namein));
         }
         else
         {
-            return "True or false, it isn't that hard";
+            return "True or false, it isn't that hard. " + input + " is not a proper input";
         }
     }
     else if(typein == "string")
@@ -362,6 +361,18 @@ string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string i
         else if (input == "false" || input == "0")
         {
             targetblob.Untag(namein);
+        }
+        else if (input == "invert")
+        {
+            bool hastag = targetblob.hasTag(namein);
+            if(hastag)
+            {
+                targetblob.Untag(namein);
+            }
+            else
+            {
+                targetblob.Tag(namein);
+            }
         }
         else
         {
