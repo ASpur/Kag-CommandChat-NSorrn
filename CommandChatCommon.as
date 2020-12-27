@@ -606,22 +606,14 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
     
     @target_player = target_players[0];
 
-    if (target_player != null)
+    if(target_player_blob_param == true)
     {
-        if(target_player_blob_param == true)
+        if(target_player.getBlob() == null && target_player.getBlob().getName() != "")
         {
-            if(target_player.getBlob() == null && target_player.getBlob().getName() != "")
-            {
-                sendClientMessage(player, "This player does not yet have a blob.");
-                return false;
-            }
-            @target_blob = @target_player.getBlob();
+            sendClientMessage(player, "This player does not yet have a blob.");
+            return false;
         }
-    }
-    else
-    {
-        sendClientMessage(player, "player " + tokens[target_player_slot] + " not found");
-        return false;
+        @target_blob = @target_player.getBlob();
     }
 
     return true;
