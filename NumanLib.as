@@ -128,7 +128,7 @@ namespace Num
     //Returns an array of players that have "shortname" at the start of their username. If their username is exactly the same, it will return an array containing only that player excluding the rest.
     array<CPlayer@> getPlayersByShortUsername(string shortname)
     {
-        array<CPlayer@> playersout;//The main array for storing all the players which contain shortname
+        array<CPlayer@> playersout();//The main array for storing all the players which contain shortname
 
         for(int i = 0; i < getPlayerCount(); i++)//For every player
         {
