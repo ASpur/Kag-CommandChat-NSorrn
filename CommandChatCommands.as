@@ -1433,13 +1433,16 @@ class Teleport : CommandBase
         
 
         target_player_slot = 1;
-		target_player_blob_param = true;//This command requires the targets blob
+		target_player_blob_param = true;//This command requires the target's blob
 
         permlevel = pAdmin;
         commandtype = Template;
         minimum_parameter_count = 1;
 
-        blob_must_exist = false;
+        if(tokens.length > 2)//Two players that don't have to be the user.
+        {
+            blob_must_exist = false;
+        }
     }
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
@@ -1454,7 +1457,6 @@ class Teleport : CommandBase
             
             array<CPlayer@> target_players = Num::getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
             if(target_players.size() > 1)//If there is more than 1 player in the list
-
             {
                 string playernames = "";
                 for(int i = 0; i < target_players.size(); i++)//for every player in that list
@@ -1464,7 +1466,7 @@ class Teleport : CommandBase
                 sendClientMessage(player, "There is more than one possible player for the second player param" + playernames);//tell the client that these players in the string were found
                 return false;//don't send the message to chat, don't do anything else
             }
-            else if(target_players == null || target_players.length == 0)
+            else if(target_players.size() == 0)
             {
                 sendClientMessage(player, "No player was found for the second player param.");
                 return false;
@@ -1472,34 +1474,27 @@ class Teleport : CommandBase
 
             CPlayer@ target_playertwo = target_players[0];
             
-            if (target_playertwo !is null)
+            CBlob@ target_blobtwo = target_playertwo.getBlob();
+            
+            if(target_blobtwo != null)
             {
-                CBlob@ target_blobtwo = target_playertwo.getBlob();
-                
-                if(target_blobtwo != null && target_blob != null)
-                {
-                    Vec2f target_postwo = target_blobtwo.getPosition();
-                    target_postwo.y -= 5;
+                Vec2f target_postwo = target_blobtwo.getPosition();
+                target_postwo.y -= 5;
 
-                    CBitStream params;//Assign the params
+                CBitStream params;//Assign the params
 
-                    params.write_u16(target_player.getNetworkID());
-                    params.write_Vec2f(target_postwo);
-                    rules.SendCommand(rules.getCommandID("teleport"), params);
-                }
+                params.write_u16(target_player.getNetworkID());
+                params.write_Vec2f(target_postwo);
+                rules.SendCommand(rules.getCommandID("teleport"), params);
             }
             else
             {
-                sendClientMessage(player, "The second specified player " + tokens[2] + " was not found");
+                sendClientMessage(player, "The second specified player's blob does not exist to teleport to it.");
+                return false;
             }
         }
         else 
         {
-            if (blob == null)
-            {
-                sendClientMessage(player, "You cannot teleport your blob to this player as you have no blob.");
-                return false;
-            }
             Vec2f target_pos = target_blob.getPosition();
             target_pos.y -= 5;
 
