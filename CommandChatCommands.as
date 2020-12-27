@@ -1862,7 +1862,9 @@ class ForceRespawn : CommandBase
         }
         else
         {
-            spawn = Vec2f(0, Num::getTileUnderPos(Vec2f(0, 0)));
+            CMap@ map = getMap();
+            spawn = Vec2f(map.tilesize * 2,//Two tiles out
+             Num::getTileUnderPos(Vec2f(0, 0)) - map.tilesize);//The top of the tile below up by one tile.
         }
 
         string actor = "knight";
