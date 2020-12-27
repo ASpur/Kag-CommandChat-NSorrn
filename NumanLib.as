@@ -329,6 +329,29 @@ namespace Num
     {
         return value - value % multiple;    
     }
+    
+    //1: Point to get the tile under.
+    //Returns the top of the tile under the point.
+    u32 getTileUnderPos(Vec2f pos)
+    {
+        CMap@ map = getMap();	
+        u16 tilesdown = 0;
+        
+        u32 pos_y = pos.y - pos.y % map.tilesize;//Store the y pos floored to the nearest top of a tile
+        while(true)//Loop until stopped inside
+        {
+            if(map.tilemapheight * map.tilesize < pos_y + tilesdown * map.tilesize)//If we are checking below the map itself
+            {
+                break;
+            }
+            if(map.isTileSolid(Vec2f(pos.x, pos_y + map.tilesize * tilesdown)))//if this current point has a solid tile
+            {
+                return(pos_y + tilesdown * map.tilesize);//The current blobs pos plus one or more tiles down
+            }
+            tilesdown += 1;
+        }
+        return 0;
+    }
 }
 
 //IDEAS
@@ -337,7 +360,6 @@ namespace Num
 Numan_library. Including 
 1. Is any key pressed (can input blob or CControls) Is any mouse button pressed. etc.
 2. Input an array of control enums to check if any are pressed.
-3. Get ground under point. (see my version of wizard wars in SpellCommon.as at the bottom)
 4. Is string a 0 or 1 (outputs bool if is not a 0 or 1). takes in a referenced bool, changes it to true or falsed based on the inputted string
 5. Put string array into one big string.
 6. Easy on command method/function. Make it possible to send around things via methods and without using onCommand stuff. only CBitStream.
