@@ -332,7 +332,7 @@ namespace Num
     
     //1: Point to get the tile under.
     //Returns the top of the tile under the point.
-    u32 getTileUnderPos(Vec2f pos)
+    f32 getTileUnderPos(Vec2f pos)
     {
         CMap@ map = getMap();	
         u16 tilesdown = 0;
@@ -350,7 +350,7 @@ namespace Num
             }
             tilesdown += 1;
         }
-        return 0;
+        return 0.0f;
     }
 }
 
