@@ -133,6 +133,11 @@ namespace Num
         for(int i = 0; i < getPlayerCount(); i++)//For every player
         {
             CPlayer@ player = getPlayer(i);//Grab the player
+            if(player == null)//If the player doesn't exist for whatever reason.
+            {
+                continue;//Skip past them.
+            }
+
             string playerusername = player.getUsername();//Get the player's username
 
             if(playerusername == shortname)//If the name is exactly the same
