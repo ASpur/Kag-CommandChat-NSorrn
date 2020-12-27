@@ -1862,7 +1862,7 @@ class ForceRespawn : CommandBase
         }
         else
         {
-            spawn = Vec2f(0,0);
+            spawn = Vec2f(0, Num::getTileUnderPos(Vec2f(0, 0)));
         }
 
         string actor = "knight";
