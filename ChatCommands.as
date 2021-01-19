@@ -91,8 +91,8 @@
 
 //make sure you can't abuse the lantern code
 
-
-
+//If you put a - after the !, the location for your blob is swapped out for mouse position. Effectively spawning things on your mouse. (tping players to your mouse. etc.)
+//"!-chest" will spawn a chest on the position of your cursor.
 
 
 #include "MakeSeed.as";

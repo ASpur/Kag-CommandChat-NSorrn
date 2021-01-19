@@ -1,5 +1,5 @@
 //V1.0
-namespace Num
+namespace Num//TODO - Rename to just Nu
 {
 
     //Returns every player in the server in an array.
@@ -352,6 +352,8 @@ namespace Num
         }
         return 0.0f;
     }
+
+
 }
 
 //IDEAS
@@ -378,8 +380,8 @@ Numan_library. Including
 #18. Time since map loaded.
 #19. Get blocks in radius. (blocky radius, jagged array of blocks)
 #20. Get if there are blocks between two given points. optional "give" value that effectively shrinks the size of all the blocks corners. (it's a quality of life thing)
-
-
+#21. Get quantity of items in inventory. (say you have 250 wood and 125 wood. It gets them all and adds them together.)
+#22. Get spawn locations for specified team.
 
 
 
