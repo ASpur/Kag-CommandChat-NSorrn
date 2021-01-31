@@ -727,7 +727,7 @@ class GetTag : CommandBase
         {
             blob_must_exist = false;//There is a specified blob/player. The blob doesn't need to exist.
 
-            if(Num::IsNumeric(tokens[3]))//Is this a netid?
+            if(Nu::IsNumeric(tokens[3]))//Is this a netid?
             {
                 uint netid = parseInt(tokens[3]);//Get the netid.
 
@@ -770,7 +770,7 @@ class GetTag : CommandBase
             @target_player = @player;//Set to the current player.
         }
         else if(target_player == null//No player? It's a netid of a blob?
-        && Num::IsNumeric(tokens[4]))//And the forth token is a number.
+        && Nu::IsNumeric(tokens[4]))//And the forth token is a number.
         {
             CBlob@ _blob = getBlobByNetworkID(parseInt(tokens[4]));//Parse it and get the blob from the netid.
             @target_blob = @_blob;
@@ -817,7 +817,7 @@ class TagThing : CommandBase
         {
             blob_must_exist = false;//There is a specified blob/player. The blob doesn't need to exist.
 
-            if(Num::IsNumeric(tokens[4]))//Is this a netid?
+            if(Nu::IsNumeric(tokens[4]))//Is this a netid?
             {
                 uint netid = parseInt(tokens[4]);//Get the netid.
 
@@ -1455,7 +1455,7 @@ class Teleport : CommandBase
             //    return false;
             //}
             
-            array<CPlayer@> target_players = Num::getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
+            array<CPlayer@> target_players = Nu::getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
             if(target_players.size() > 1)//If there is more than 1 player in the list
             {
                 string playernames = "";
@@ -1864,7 +1864,7 @@ class ForceRespawn : CommandBase
         {
             CMap@ map = getMap();
             spawn = Vec2f(map.tilesize * 2,//Two tiles out
-             Num::getTileUnderPos(Vec2f(0, 0)) - map.tilesize);//The top of the tile below up by one tile.
+            Nu::getTileUnderPos(Vec2f(0, 0)) - map.tilesize);//The top of the tile below up by one tile.
         }
 
         string actor = "knight";
@@ -2111,7 +2111,7 @@ class C_AddScript : CommandBase
         string script_name;
         string target_class;
         u16 target_netid = 0;
-        if(!Num::getBool(tokens[1], relayToClients))
+        if(!Nu::getBool(tokens[1], relayToClients))
         {
             sendClientMessage(player, "The second param was expecting either true|1 or false|0. It got neither.");
             return true;
@@ -2347,7 +2347,7 @@ class MassBlobSpawn : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        if(!Num::IsNumeric(tokens[2]))
+        if(!Nu::IsNumeric(tokens[2]))
         {
             sendClientMessage(player, "The second parameter has more than just digits.");
             return true;
@@ -2414,7 +2414,7 @@ class ReverseGravity : CommandBase
 
         if(tokens.size() > 1)
         {
-            if (!Num::IsNumeric(tokens[1]))
+            if (!Nu::IsNumeric(tokens[1]))
             {
                 sendClientMessage(player ,"The first parameter was not only digits");
                 return true;

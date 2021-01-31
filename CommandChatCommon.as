@@ -483,7 +483,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(_str_0 == "p")
                     {
                         string _str_1 = _str.substr(1, _str.size());
-                        if(_str_1.size() == 0 || !Num::IsNumeric(_str_1))
+                        if(_str_1.size() == 0 || !Nu::IsNumeric(_str_1))
                         {
                             break;
                         }
@@ -494,7 +494,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
 
                     if(target_players.size() == 0)
                     {
-                        target_players = Num::SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
+                        target_players = Nu::SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
                     }
 
                     if(target_players.size() > skip_count)
@@ -508,7 +508,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(_str_0 == "b")
                     {
                         string _str_1 = _str.substr(1, _str.size());
-                        if(_str_1.size() == 0 ||!Num::IsNumeric(_str_1))
+                        if(_str_1.size() == 0 ||!Nu::IsNumeric(_str_1))
                         {
                             break;
                         }
@@ -520,7 +520,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     {
                         array<CBlob@> _blobs;
                         getBlobs(_blobs);
-                        target_blobs = Num::SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
+                        target_blobs = Nu::SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
                     }
                     
                     if(target_blobs.size() > skip_count)
@@ -533,7 +533,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                 {
                     if(target_players.size() == 0)
                     {
-                        target_players = Num::SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
+                        target_players = Nu::SortPlayersByDistance(point, 99999999, skip_unactive_and_inventory);
                     }
 
                     if(target_players.size() != 0)
@@ -548,7 +548,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     {
                         array<CBlob@> _blobs; 
                         getBlobs(_blobs);
-                        target_blobs = Num::SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
+                        target_blobs = Nu::SortBlobsByDistance(point, 99999999, _blobs, skip_unactive_and_inventory);
                     }
                     if(target_blobs.size() != 0)
                     {
@@ -586,7 +586,7 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
         return false;
     }
 
-    array<CPlayer@> target_players = Num::getPlayersByShortUsername(tokens[target_player_slot]);//Get a list of players that have this as the start of their name
+    array<CPlayer@> target_players = Nu::getPlayersByShortUsername(tokens[target_player_slot]);//Get a list of players that have this as the start of their name
     if(target_players.size() > 1)//If there is more than 1 player in the list
     {
         string playernames = "";
