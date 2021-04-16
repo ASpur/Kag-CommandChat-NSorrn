@@ -137,46 +137,54 @@ class CommandBase : ICommand
                     sendClientMessage(player, "You must be a moderator or higher to use this command.");
                     return false;
                 }
+                break;
             case pAdmin:
                 if(!security.checkAccess_Command(player, "admin_color") && !_sv_test)
                 {
                     sendClientMessage(player, "You must be a admin or higher to use this command.");
                     return false;
                 }
+                break;
             case pSuperAdmin:
                 if(!security.checkAccess_Command(player, "ALL") && !_sv_test)
                 {
                     sendClientMessage(player, "You must be a superadmin to use this command.");
                     return false;
                 }
+                break;
             case pFreeze:
                 if(!security.checkAccess_Command(player, "freezeid") || !getSecurity().checkAccess_Command(player, "unfreezeid"))
                 {
                     sendClientMessage(player, "You do not sufficient permissions to freeze and unfreeze a player.");
                     return false;
                 }
+                break;
             case pKick:
                 if(!security.checkAccess_Command(player, "kick"))
                 {
                     sendClientMessage(player, "You do not sufficient permissions to kick a player.");
                     return false;
                 }
+                break;
             case pUnban:
                 if(!security.checkAccess_Command(player, "unban"))
                 {
                     sendClientMessage(player, "You do not sufficient permissions to unban a player.");
                     return false;
                 }
+                break;
             case pBan:
                 if(permlevel == pBan && !security.checkAccess_Command(player, "ban")){
                     sendClientMessage(player, "You do not sufficient permissions to ban a player.");
                     return false;
                 }
+                break;
             case pMute:
                 if(permlevel == pMute && (!security.checkAccess_Command(player, "mute") || !security.checkAccess_Command(player, "unmute"))){
                     sendClientMessage(player, "You do not sufficient permissions to mute a player.");
                     return false;
                 }
+                break;
         }
 
 
