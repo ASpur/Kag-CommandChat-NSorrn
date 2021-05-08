@@ -1829,7 +1829,7 @@ class ForceRespawn : CommandBase
             @target_blob = @blob;
         }
         Vec2f[] spawns;
-        Vec2f spawn;
+        Vec2f spawn = Vec2f(0, 0);
         if (target_player.getTeamNum() == 0)
         {
             if(getMap().getMarkers("blue spawn", spawns))
@@ -1863,8 +1863,20 @@ class ForceRespawn : CommandBase
         else
         {
             CMap@ map = getMap();
-            spawn = Vec2f(map.tilesize * 2,//Two tiles out
-            Nu::getTileUnderPos(Vec2f(0, 0)) - map.tilesize);//The top of the tile below up by one tile.
+            spawn.x = map.tilesize * 2;//Start two tiles out
+            
+            while(spawn.y == 0.0f)//While no ground is found?
+            {
+                if(spawn.x > map.tilemapwidth * map.tilesize)//If we've gone beyond the right of the map.
+                {
+                    spawn = Vec2f(0,0);//Just default to the top left
+                    break;//And stop
+                }
+                spawn.x += map.tilesize;//Go one tile left
+                spawn.y = Nu::getTileUnderPos(Vec2f(spawn.x, 0));//Find tile below x pos
+            }
+
+            spawn.y -= map.tilesize;//Up y position by one tile of space
         }
 
         string actor = "knight";
