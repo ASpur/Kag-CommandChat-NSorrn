@@ -45,7 +45,7 @@ class Test : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        sendClientMessage(player, "You just used the test command.");//This method sends a message to the specified player. the "player" variable is the player that used the !test command.
+        Nu::sendClientMessage(player, "You just used the test command.");//This method sends a message to the specified player. the "player" variable is the player that used the !test command.
 
         if(tokens.length > 1)//If there is more than a single token. The first token is command itself, and the second token is the number in this case.
         {
@@ -53,17 +53,17 @@ class Test : CommandBase
 
             u8 number = parseInt(string_number);//We take the very first parameter and turn it into an int variable with the name "number".
             
-            sendClientMessage(player, "There is a parameter specified. The first parameter is: " + number);//Message the player that sent this command this.
+            Nu::sendClientMessage(player, "There is a parameter specified. The first parameter is: " + number);//Message the player that sent this command this.
 
             if (tokens.length > 2)//If there are more than two tokens. The first token is the command itself, the second is the number, the third is the specified player.
             {
-                sendClientMessage(player, "There are two parameters specified, the second parameter is: " + tokens[2], SColor(255, 0, 0, 153));//This time we specify a color.
+                Nu::sendClientMessage(player, "There are two parameters specified, the second parameter is: " + tokens[2], SColor(255, 0, 0, 153));//This time we specify a color.
             
                 //Tip, you do not need to check if the target_player or target_blob exist, that is already handled by something else.
 
                 target_blob.server_setTeamNum(number);//As we specified the target_player_blob_param = true; when there are more than two tokens, we have the blob of the target_player right here.
 
-                sendClientMessage(target_player, "Your team has been changed to " + number + " by " + player.getUsername() + " who is on team " + team);//This sends a message to the target_player
+                Nu::sendClientMessage(target_player, "Your team has been changed to " + number + " by " + player.getUsername() + " who is on team " + team);//This sends a message to the target_player
             }
 
             //If there is only 1 parameter (2 tokens) do this.
@@ -509,7 +509,7 @@ class Crate : CommandBase
         }
         else
         {
-            sendClientMessage(player, "usage: !crate BLOBNAME [DESCRIPTION]"); //e.g., !crate shark Your Little Darling
+            Nu::sendClientMessage(player, "usage: !crate BLOBNAME [DESCRIPTION]"); //e.g., !crate shark Your Little Darling
             server_MakeCrate("", "", 0, team, Vec2f(pos.x, pos.y - 30.0f));
         }
 
@@ -559,11 +559,11 @@ class HeldBlobNetID : CommandBase
         CBlob@ held_blob = blob.getCarriedBlob();
         if(held_blob != null)
         {
-            sendClientMessage(player, "NetID: " + held_blob.getNetworkID());
+            Nu::sendClientMessage(player, "NetID: " + held_blob.getNetworkID());
         }
         else
         {
-            sendClientMessage(player, "Held blob not found.");
+            Nu::sendClientMessage(player, "Held blob not found.");
         }
 
         return true;
@@ -595,11 +595,11 @@ class PlayerNetID : CommandBase
     {
         if(tokens.length > 1)
         {
-            sendClientMessage(player, "NetID: " + target_player.getNetworkID());
+            Nu::sendClientMessage(player, "NetID: " + target_player.getNetworkID());
         }
         else
         {
-            sendClientMessage(player, "NetID: " + player.getNetworkID());
+            Nu::sendClientMessage(player, "NetID: " + player.getNetworkID());
         }
 
         return true;
@@ -632,11 +632,11 @@ class PlayerBlobNetID : CommandBase
     {
         if(tokens.length > 1)
         {
-            sendClientMessage(player, "NetID: " + target_blob.getNetworkID());
+            Nu::sendClientMessage(player, "NetID: " + target_blob.getNetworkID());
         }
         else
         {
-            sendClientMessage(player, "NetID: " + blob.getNetworkID());
+            Nu::sendClientMessage(player, "NetID: " + blob.getNetworkID());
         }
 
         return true;
@@ -660,10 +660,10 @@ class PlayerCount : CommandBase
     {
         uint16 playercount = getPlayerCount();
         if(playercount > 1) {
-            sendClientMessage(player, "There are " + getPlayerCount() + " Players here.");
+            Nu::sendClientMessage(player, "There are " + getPlayerCount() + " Players here.");
         }
         else {
-            sendClientMessage(player, "It's just you.");
+            Nu::sendClientMessage(player, "It's just you.");
         }
 
         return true;
@@ -778,11 +778,11 @@ class GetTag : CommandBase
 
         if(target_blob == null)
         {
-            sendClientMessage(player, "GetTag command for some reason didn't have a target_blob");
+            Nu::sendClientMessage(player, "GetTag command for some reason didn't have a target_blob");
             return true;
         }
 
-        sendClientMessage(player, GetSpecificBlobTag(target_blob, tokens[1], tokens[2]));
+        Nu::sendClientMessage(player, GetSpecificBlobTag(target_blob, tokens[1], tokens[2]));
 
         return true;
     }
@@ -922,7 +922,7 @@ class TagThing : CommandBase
 
         if(message != "")
         {
-            sendClientMessage(player, message);
+            Nu::sendClientMessage(player, message);
         }
 
         return true;
@@ -951,12 +951,12 @@ class HideCommands : CommandBase
         bool hidecom = false;
         if(rules.get_bool(player.getUsername() + "_hidecom") == false)
         {
-            sendClientMessage(player, "Commands hidden");
+            Nu::sendClientMessage(player, "Commands hidden");
             hidecom = true;
         }
         else
         {
-            sendClientMessage(player, "Commands unhidden");
+            Nu::sendClientMessage(player, "Commands unhidden");
         }
         
         ConfigFile cfg();
@@ -1056,11 +1056,11 @@ class GiveCoin : CommandBase
         {
             player.server_setCoins(player.getCoins() - coins);
             target_player.server_setCoins(target_player.getCoins() + coins);
-            sendClientMessage(player, "You gave " + coins + " Coins To " + target_player.getCharacterName());
+            Nu::sendClientMessage(player, "You gave " + coins + " Coins To " + target_player.getCharacterName());
         }
         else
         {
-            sendClientMessage(player, "You don't have enough coins");
+            Nu::sendClientMessage(player, "You don't have enough coins");
             return false;
         }
 
@@ -1096,8 +1096,8 @@ class PrivateMessage : CommandBase
         }
         if(message != "")
         {
-            sendClientMessage(target_player, messagefrom + message, SColor(255, 0, 0, 153));
-            sendClientMessage(player, "Your message \" " + message + "\"has been sent");
+            Nu::sendClientMessage(target_player, messagefrom + message, SColor(255, 0, 0, 153));
+            Nu::sendClientMessage(player, "Your message \" " + message + "\"has been sent");
             return false;
         }
 
@@ -1128,7 +1128,7 @@ class Ban : CommandBase
         CSecurity@ security = getSecurity();
         if(security.checkAccess_Feature(target_player, "ban_immunity"))
         {
-            sendClientMessage(player, "rules player has ban immunity");//Check for kick immunity    
+            Nu::sendClientMessage(player, "rules player has ban immunity");//Check for kick immunity    
             return false;
         }
         uint32 ban_length = 60;
@@ -1137,7 +1137,7 @@ class Ban : CommandBase
             ban_length = parseInt(tokens[2]);
         }
         security.ban(target_player, ban_length);
-        sendClientMessage(player, "Player " + target_player.getUsername() + " has been banned for " + ban_length + " minutes");//Check for ban immunity
+        Nu::sendClientMessage(player, "Player " + target_player.getUsername() + " has been banned for " + ban_length + " minutes");//Check for ban immunity
 
         return true;
     }
@@ -1165,11 +1165,11 @@ class Unban : CommandBase
         /*if(security.isPlayerBanned(tokens[1]))
         {*/
             security.unBan(tokens[1]);
-            sendClientMessage(player, "Player " + tokens[1] + " has been unbanned");
+            Nu::sendClientMessage(player, "Player " + tokens[1] + " has been unbanned");
         /*}
         else
         {
-            sendClientMessage(player, "Specified banned player not found, i.e nobody with this username is banned");
+            Nu::sendClientMessage(player, "Specified banned player not found, i.e nobody with this username is banned");
         }*///Fix me later numan
 
         return true;
@@ -1198,11 +1198,11 @@ class Kick : CommandBase
     {
         if(getSecurity().checkAccess_Feature(target_player, "kick_immunity"))
         {
-            sendClientMessage(player, "rules player has kick immunity");//Check for kick immunity    
+            Nu::sendClientMessage(player, "rules player has kick immunity");//Check for kick immunity    
             return false;
         }
         KickPlayer(target_player);
-        sendClientMessage(player, "Player " + tokens[1] + " has been kicked");//Check for kick immunity
+        Nu::sendClientMessage(player, "Player " + tokens[1] + " has been kicked");//Check for kick immunity
 
         return true;
     }
@@ -1229,7 +1229,7 @@ class Freeze : CommandBase
     {
         if(getSecurity().checkAccess_Feature(target_player, "freeze_immunity"))
         {
-            sendClientMessage(player, "This player has freeze immunity");//Check for kick immunity    
+            Nu::sendClientMessage(player, "This player has freeze immunity");//Check for kick immunity    
             return false;
         }
         target_player.freeze = !target_player.freeze;
@@ -1298,7 +1298,7 @@ class Team : CommandBase
     {
         if(tokens.length == 1)
         {
-            sendClientMessage(player, "Your controlled blob's team is " + blob.getTeamNum());
+            Nu::sendClientMessage(player, "Your controlled blob's team is " + blob.getTeamNum());
             return false;
         }
 
@@ -1308,7 +1308,7 @@ class Team : CommandBase
         {
             if(tokens[1] == "get")//If the first param is "get"
             {//Find that player's blob's team.
-                sendClientMessage(player, "This player's controlled blob's team is " + target_blob.getTeamNum()); 
+                Nu::sendClientMessage(player, "This player's controlled blob's team is " + target_blob.getTeamNum()); 
             }
             else
             {
@@ -1357,7 +1357,7 @@ class PlayerTeam : CommandBase
     {
         if(tokens.length == 1)
         {
-            sendClientMessage(player, "Your player team is " + player.getTeamNum());
+            Nu::sendClientMessage(player, "Your player team is " + player.getTeamNum());
             return false;
         }
 
@@ -1368,7 +1368,7 @@ class PlayerTeam : CommandBase
         { 	
             if(tokens[1] == "get")//If the first param is "get"
             {//Find that player's blob's team.
-                sendClientMessage(player, "This player's team is " + target_player.getTeamNum()); 
+                Nu::sendClientMessage(player, "This player's team is " + target_player.getTeamNum()); 
             }
             else
             {
@@ -1451,7 +1451,7 @@ class Teleport : CommandBase
         {
             //if(target_player.isBot())
             //{
-            //    sendClientMessage(player, "You can not teleport a bot.");
+            //    Nu::sendClientMessage(player, "You can not teleport a bot.");
             //    return false;
             //}
             
@@ -1463,12 +1463,12 @@ class Teleport : CommandBase
                 {
                     playernames += " : " + target_players[i].getUsername();// put their name in a string
                 }
-                sendClientMessage(player, "There is more than one possible player for the second player param" + playernames);//tell the client that these players in the string were found
+                Nu::sendClientMessage(player, "There is more than one possible player for the second player param" + playernames);//tell the client that these players in the string were found
                 return false;//don't send the message to chat, don't do anything else
             }
             else if(target_players.size() == 0)
             {
-                sendClientMessage(player, "No player was found for the second player param.");
+                Nu::sendClientMessage(player, "No player was found for the second player param.");
                 return false;
             }
 
@@ -1489,7 +1489,7 @@ class Teleport : CommandBase
             }
             else
             {
-                sendClientMessage(player, "The second specified player's blob does not exist to teleport to it.");
+                Nu::sendClientMessage(player, "The second specified player's blob does not exist to teleport to it.");
                 return false;
             }
         }
@@ -1573,7 +1573,7 @@ class Damage : CommandBase
         float damage = parseFloat(tokens[1]);
         if(damage < 0.0)
         {
-            sendClientMessage(player, "You can not apply negative damage");
+            Nu::sendClientMessage(player, "You can not apply negative damage");
             return false;
         }
         
@@ -1588,7 +1588,7 @@ class Damage : CommandBase
             {
                 target_blob.server_Hit(target_blob, target_blob.getPosition(), Vec2f(0, 0), damage, 0);
             }
-            if(target_player.getUsername() == "the1sad1numanator") sendEngineMessage(player, "                                                                    \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nno bulli ;-;");
+            if(target_player.getUsername() == "the1sad1numanator") Nu::sendEngineMessage(player, "                                                                    \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nno bulli ;-;");
         }
         else
         {
@@ -1671,7 +1671,7 @@ class Morph : CommandBase
             
         if(target_blob == null)
         {
-            sendClientMessage(player, "Can not respawn while dead, try !forcerespawn \"player\"");
+            Nu::sendClientMessage(player, "Can not respawn while dead, try !forcerespawn \"player\"");
             return false;
         }
         CBlob@ newBlob = server_CreateBlob(actor, target_blob.getTeamNum(), target_blob.getPosition());
@@ -1690,7 +1690,7 @@ class Morph : CommandBase
             {
                 newBlob.server_Die();
             }
-            sendClientMessage(player, "Failed to spawn the \"" + actor + "\" blob");
+            Nu::sendClientMessage(player, "Failed to spawn the \"" + actor + "\" blob");
         }
 
         return true;
@@ -1759,7 +1759,7 @@ class AddRobot : CommandBase
             {
                 if(blob == null)
                 {
-                    sendClientMessage(player, "Your blob does not exist to let a blob spawn on you.");
+                    Nu::sendClientMessage(player, "Your blob does not exist to let a blob spawn on you.");
                     return false;
                 }
                 if(bot_actor == "")
@@ -2011,7 +2011,7 @@ class CommandCount : CommandBase
         array<ICommand@> commands;
         rules.get("ChatCommands", commands);
 
-        sendClientMessage(player, "There are " + commands.size() + " commands");
+        Nu::sendClientMessage(player, "There are " + commands.size() + " commands");
         //TODO tell active commands.
         //TODO tell commands that this user can use  (check each one's security)
         return true;
@@ -2125,7 +2125,7 @@ class C_AddScript : CommandBase
         u16 target_netid = 0;
         if(!Nu::getBool(tokens[1], relayToClients))
         {
-            sendClientMessage(player, "The second param was expecting either true|1 or false|0. It got neither.");
+            Nu::sendClientMessage(player, "The second param was expecting either true|1 or false|0. It got neither.");
             return true;
         }
 
@@ -2149,7 +2149,7 @@ class C_AddScript : CommandBase
             CBlob@ target_blobert = getBlobByNetworkID(target_netid);//I'm not good at naming variables. Apologies to anyone named blobert.
             if(target_blobert == null)
             {
-                sendClientMessage(player, "Could not find the blob associated with the NetID");
+                Nu::sendClientMessage(player, "Could not find the blob associated with the NetID");
                 return true;
             }
             else if(target_class == "csprite" || target_class == "sprite")
@@ -2157,7 +2157,7 @@ class C_AddScript : CommandBase
                 CSprite@ target_sprite = target_blobert.getSprite();
                 if(target_sprite == null)
                 {
-                    sendClientMessage(player, "This blob's sprite is null"); return false;
+                    Nu::sendClientMessage(player, "This blob's sprite is null"); return false;
                 }
             }
             else if(target_class == "cbrain" || target_class == "brain")
@@ -2165,7 +2165,7 @@ class C_AddScript : CommandBase
                 CBrain@ target_brain = target_blobert.getBrain();
                 if(target_brain == null)
                 {
-                    sendClientMessage(player, "The blob's brain is null"); return false;
+                    Nu::sendClientMessage(player, "The blob's brain is null"); return false;
                 }
             }
             else if(target_class == "cshape" || target_class == "shape")
@@ -2173,13 +2173,13 @@ class C_AddScript : CommandBase
                 CShape@ target_shape = target_blobert.getShape();
                 if(target_shape == null)
                 {
-                    sendClientMessage(player, "The blob's shape is null"); return false;
+                    Nu::sendClientMessage(player, "The blob's shape is null"); return false;
                 }
             }
         }
         else if (target_netid == 0)
         {
-            sendClientMessage(player, "A NetID is required as the forth parameter");
+            Nu::sendClientMessage(player, "A NetID is required as the forth parameter");
             return true;
         }
 
@@ -2222,11 +2222,11 @@ class BlobNameByID : CommandBase
         CBlob@ _blob = getBlobByNetworkID(net_id);
         if(_blob == null)
         {
-            sendClientMessage(player, "Failed to find a blob for the id " + net_id);
+            Nu::sendClientMessage(player, "Failed to find a blob for the id " + net_id);
             return true;
         }
         
-        sendClientMessage(player, "The name for the id " + net_id + " is \"" + _blob.getName() + "\"");
+        Nu::sendClientMessage(player, "The name for the id " + net_id + " is \"" + _blob.getName() + "\"");
         
         return true;
     }
@@ -2267,11 +2267,11 @@ class Mute : CommandBase
         {
             if(security.checkAccess_Feature(target_player, "mute_immunity"))
             {
-                sendClientMessage(player, "This player has mute immunity");
+                Nu::sendClientMessage(player, "This player has mute immunity");
                 return true;
             }
             rules.set_bool(target_player.getUsername() + "_muted", true);
-            sendClientMessage(player, "player " + target_player.getUsername() + " has been muted");
+            Nu::sendClientMessage(player, "player " + target_player.getUsername() + " has been muted");
         }
         else
         {
@@ -2320,11 +2320,11 @@ class Unmute : CommandBase
             if(rules.get_bool(target_player.getUsername() + "_muted"))
             {
                 rules.set_bool(target_player.getUsername() + "_muted", false);
-                sendClientMessage(player, "The player "  + target_player.getUsername() + " has been unmted");
+                Nu::sendClientMessage(player, "The player "  + target_player.getUsername() + " has been unmted");
             }
             else
             {
-                sendClientMessage(player, "This player isn't muted");
+                Nu::sendClientMessage(player, "This player isn't muted");
             }
         }
         else
@@ -2361,19 +2361,19 @@ class MassBlobSpawn : CommandBase
     {
         if(!Nu::IsNumeric(tokens[2]))
         {
-            sendClientMessage(player, "The second parameter has more than just digits.");
+            Nu::sendClientMessage(player, "The second parameter has more than just digits.");
             return true;
         }
 
         u16 blob_count = parseInt(tokens[2]);
         if(blob_count < 1)
         {
-            sendClientMessage(player, "The blob count cannot be less than 1");
+            Nu::sendClientMessage(player, "The blob count cannot be less than 1");
             return false;
         }
         if(blob_count > 50)
         {
-            sendClientMessage(player, "This command limits the mass blob spawning to 50 blobs\nThis is to prevent unintentional server crashing by spawning too many blobs accidently.");
+            Nu::sendClientMessage(player, "This command limits the mass blob spawning to 50 blobs\nThis is to prevent unintentional server crashing by spawning too many blobs accidently.");
             return true;
         }
 
@@ -2381,7 +2381,7 @@ class MassBlobSpawn : CommandBase
 
         if(massblob.getName() == " ")
         {
-            sendClientMessage(player, "Failed to spawn blob from " + tokens[1]);
+            Nu::sendClientMessage(player, "Failed to spawn blob from " + tokens[1]);
             return false;
         }
         
@@ -2428,13 +2428,13 @@ class ReverseGravity : CommandBase
         {
             if (!Nu::IsNumeric(tokens[1]))
             {
-                sendClientMessage(player ,"The first parameter was not only digits");
+                Nu::sendClientMessage(player ,"The first parameter was not only digits");
                 return true;
             }
             warning_time = parseInt(tokens[1]) * 30;
             if(warning_time < 1)
             {
-                sendClientMessage(player, "The time in seconds before gravity changes cannot be 0 or less than 0.");
+                Nu::sendClientMessage(player, "The time in seconds before gravity changes cannot be 0 or less than 0.");
                 return true;
             }
         }

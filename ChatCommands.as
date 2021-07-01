@@ -109,15 +109,11 @@ uint ChatCommandDelay = 30 * 3; // Cooldown in seconds.
 
 void onInit(CRules@ this)
 {
-    //onCommand stuff
-	this.addCommandID("clientmessage");	
-	this.addCommandID("teleport");
+    //onCommand stuff	
     this.addCommandID("clientshowhelp");
 	this.addCommandID("allclientshidehelp");
-    this.addCommandID("announcement");
     this.addCommandID("colorlantern");
-    this.addCommandID("addscript");
-    this.addCommandID("enginemessage");	
+    this.addCommandID("addscript");	
     this.addCommandID("flipmovers");	
     //onCommand end
 
@@ -233,7 +229,6 @@ void onInit(CRules@ this)
 
 void onRestart( CRules@ this )
 {
-    this.set_u32("announcementtime", 0);
     player_last_sent.deleteAll();
 }
 
@@ -274,7 +269,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
 
     if(this.get_bool(player.getUsername() + "_muted") == true)//is this player muted?
     {
-        sendClientMessage(player, "You are muted, the message was not sent.");
+        Nu::sendClientMessage(player, "You are muted, the message was not sent.");
         return false;//Instant nope.
     }
 
@@ -333,7 +328,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color"))//If sv_test is not true and the player does not have admin color
         {
             //Inform the player about not having permissions?
-            sendClientMessage(player, "You don't have permissions to spawn a blob. You may of misspelled a command");
+            Nu::sendClientMessage(player, "You don't have permissions to spawn a blob. You may of misspelled a command");
             return !this.get_bool(player.getUsername() + "_hidecom");
         }
         
@@ -349,7 +344,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             {
                 float time_left_in_seconds = Maths::Round(float(lastChatTime - getGameTime()) / 30.0f);
 
-                sendClientMessage(player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
+                Nu::sendClientMessage(player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
                 
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
@@ -362,7 +357,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             CBlob@ created_blob = server_CreateBlob(name, team, pos);
             if(created_blob.getName() == "")
             {
-                sendClientMessage(player, "Failed to spawn " + name + ". You may of mispelled a command.");
+                Nu::sendClientMessage(player, "Failed to spawn " + name + ". You may of mispelled a command.");
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
             
@@ -414,7 +409,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         {
             float time_left_in_seconds = Maths::Round(float(lastChatTime - getGameTime()) / 30.0f);
 
-            sendClientMessage(player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
+            Nu::sendClientMessage(player, "Command is still under cooldown for " + time_left_in_seconds + " Seconds");
             
             return !this.get_bool(player.getUsername() + "_hidecom");
         }
@@ -441,36 +436,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
 
 void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 {
-    if(cmd == this.getCommandID("clientmessage") )//sends message to a specified client
-    {
-        
-		string text = params.read_string();
-        u8 alpha = params.read_u8();
-        u8 red = params.read_u8();
-        u8 green = params.read_u8();
-        u8 blue = params.read_u8();
-
-
-        client_AddToChat(text, SColor(alpha, red, green, blue));//Color of the text
-    }
-	else if(cmd == this.getCommandID("teleport") )//teleports player to other player
-	{
-		CPlayer@ target_player = getPlayerByNetworkId(params.read_u16());//Player 1
-		
-		if(target_player == null) //|| !target_player.isMyPlayer())//Not sure if this is needed
-		{	return;	}
-		
-
-		CBlob@ target_blob = target_player.getBlob();
-		if(target_blob != null)
-		{
-            Vec2f pos = params.read_Vec2f();
-			target_blob.setPosition(pos);
-            ParticleZombieLightning(pos);
-        }
-		
-	}
-    else if(cmd == this.getCommandID("clientshowhelp"))//toggles the gui help overlay
+    if(cmd == this.getCommandID("clientshowhelp"))//toggles the gui help overlay
     {
 		if(!isClient())
 		{
@@ -508,11 +474,6 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 				this.set_bool(target_player.getNetworkID() + "_showHelp", false);
 			}
 		}
-	}
-    else if(cmd == this.getCommandID("announcement"))
-	{
-		this.set_string("announcement", params.read_string());
-		this.set_u32("announcementtime",30 * 15 + getGameTime());//15 seconds
 	}
     else if(cmd == this.getCommandID("colorlantern"))
     {
@@ -585,11 +546,6 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
             }
         }
     }
-    else if(cmd == this.getCommandID("enginemessage") )
-    {
-		string text = params.read_string();
-        EngineMessage(text);
-    }
     else
     {
         ReverseGravity::onCommand(this, cmd, params);
@@ -618,11 +574,6 @@ void onRender( CRules@ this )
     {
         return;
     }
-
-    if(this.get_u32("announcementtime") > getGameTime())
-	{
-		GUI::DrawTextCentered(this.get_string("announcement"), Vec2f(getScreenWidth()/2,getScreenHeight()/2), SColor(255,255,127,60));
-	}
 
     s16 gravity_reverse = this.get_s16("gravity_reverse");
     if(gravity_reverse != 0 && Maths::Abs(gravity_reverse) != 1)

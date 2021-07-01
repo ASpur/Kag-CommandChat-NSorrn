@@ -112,7 +112,7 @@ class CommandBase : ICommand
         {
             if(blob == null)
             {
-                sendClientMessage(player, "Your blob appears to be null, this command will not work unless your blob actually exists.");
+                Nu::sendClientMessage(player, "Your blob appears to be null, this command will not work unless your blob actually exists.");
                 return false;
             }
         }
@@ -134,54 +134,54 @@ class CommandBase : ICommand
             case pModerator:
                 if(!player.isMod() && !_sv_test)
                 {
-                    sendClientMessage(player, "You must be a moderator or higher to use this command.");
+                    Nu::sendClientMessage(player, "You must be a moderator or higher to use this command.");
                     return false;
                 }
                 break;
             case pAdmin:
                 if(!security.checkAccess_Command(player, "admin_color") && !_sv_test)
                 {
-                    sendClientMessage(player, "You must be a admin or higher to use this command.");
+                    Nu::sendClientMessage(player, "You must be a admin or higher to use this command.");
                     return false;
                 }
                 break;
             case pSuperAdmin:
                 if(!security.checkAccess_Command(player, "ALL") && !_sv_test)
                 {
-                    sendClientMessage(player, "You must be a superadmin to use this command.");
+                    Nu::sendClientMessage(player, "You must be a superadmin to use this command.");
                     return false;
                 }
                 break;
             case pFreeze:
                 if(!security.checkAccess_Command(player, "freezeid") || !getSecurity().checkAccess_Command(player, "unfreezeid"))
                 {
-                    sendClientMessage(player, "You do not sufficient permissions to freeze and unfreeze a player.");
+                    Nu::sendClientMessage(player, "You do not sufficient permissions to freeze and unfreeze a player.");
                     return false;
                 }
                 break;
             case pKick:
                 if(!security.checkAccess_Command(player, "kick"))
                 {
-                    sendClientMessage(player, "You do not sufficient permissions to kick a player.");
+                    Nu::sendClientMessage(player, "You do not sufficient permissions to kick a player.");
                     return false;
                 }
                 break;
             case pUnban:
                 if(!security.checkAccess_Command(player, "unban"))
                 {
-                    sendClientMessage(player, "You do not sufficient permissions to unban a player.");
+                    Nu::sendClientMessage(player, "You do not sufficient permissions to unban a player.");
                     return false;
                 }
                 break;
             case pBan:
                 if(permlevel == pBan && !security.checkAccess_Command(player, "ban")){
-                    sendClientMessage(player, "You do not sufficient permissions to ban a player.");
+                    Nu::sendClientMessage(player, "You do not sufficient permissions to ban a player.");
                     return false;
                 }
                 break;
             case pMute:
                 if(permlevel == pMute && (!security.checkAccess_Command(player, "mute") || !security.checkAccess_Command(player, "unmute"))){
-                    sendClientMessage(player, "You do not sufficient permissions to mute a player.");
+                    Nu::sendClientMessage(player, "You do not sufficient permissions to mute a player.");
                     return false;
                 }
                 break;
@@ -192,7 +192,7 @@ class CommandBase : ICommand
         //Minimum parameter check
         if(tokens.size() < minimum_parameter_count + 1)
         {
-            sendClientMessage(player, "This command requires at least " + minimum_parameter_count + " parameters.");
+            Nu::sendClientMessage(player, "This command requires at least " + minimum_parameter_count + " parameters.");
             return false;
         }
 
@@ -246,53 +246,6 @@ class CommandBase : ICommand
 
 
 
-
-
-
-
-
-
-
-
-
-
-//Rules, what player the command is being sent to, what is the message?
-void sendClientMessage(CPlayer@ player, string message)
-{
-    CRules@ rules = getRules();
-
-	CBitStream params;//Assign the params
-	params.write_string(message);
-    params.write_u8(255);
-    params.write_u8(255);
-    params.write_u8(0);
-    params.write_u8(0);
-
-	rules.SendCommand(rules.getCommandID("clientmessage"), params, player);
-}
-void sendClientMessage(CPlayer@ player, string message, SColor color)//Now with color
-{
-    CRules@ rules = getRules();
-
-	CBitStream params;//Assign the params
-	params.write_string(message);
-    params.write_u8(color.getAlpha());
-    params.write_u8(color.getRed());
-    params.write_u8(color.getGreen());
-    params.write_u8(color.getBlue());
-
-	rules.SendCommand(rules.getCommandID("clientmessage"), params, player);
-}
-
-void sendEngineMessage(CPlayer@ player, string message)//Message that comes down from the top of the screen.
-{
-    CRules@ rules = getRules();
-
-	CBitStream params;//Assign the params
-	params.write_string(message);
-
-	rules.SendCommand(rules.getCommandID("enginemessage"), params, player);
-}
 
 string TagSpecificBlob(CBlob@ targetblob, string typein, string namein, string input)
 {
@@ -590,7 +543,7 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
 {
     if(tokens.length <= target_player_slot)
     {
-        sendClientMessage(player, "You must specify the player on param " + target_player_slot);
+        Nu::sendClientMessage(player, "You must specify the player on param " + target_player_slot);
         return false;
     }
 
@@ -602,12 +555,12 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
         {
             playernames += " : " + target_players[i].getUsername();// put their name in a string
         }
-        sendClientMessage(player, "There is more than one possible player" + playernames);//tell the client that these players in the string were found
+        Nu::sendClientMessage(player, "There is more than one possible player" + playernames);//tell the client that these players in the string were found
         return false;//don't send the message to chat, don't do anything else
     }
     else if(target_players == null || target_players.length == 0)
     {
-        sendClientMessage(player, "No players were found from " + tokens[target_player_slot]);
+        Nu::sendClientMessage(player, "No players were found from " + tokens[target_player_slot]);
         return false;
     }
 
@@ -618,7 +571,7 @@ bool getAndAssignTargets(CPlayer@ player, string[]@ tokens, u8 target_player_slo
     {
         if(target_player.getBlob() == null || target_player.getBlob().getName() == "")
         {
-            sendClientMessage(player, "This player does not yet have a blob.");
+            Nu::sendClientMessage(player, "This player does not yet have a blob.");
             return false;
         }
         @target_blob = @target_player.getBlob();
@@ -654,7 +607,7 @@ bool getCommandByTokens(string[]@ tokens, array<ICommand@> commands, CPlayer@ pl
             {   //The desired command is now known
                 if(!commands[p].isActive() && !getSecurity().checkAccess_Command(player, "ALL"))//If the command is not active (if the player is a superadmin, they can use the command anyway.)
                 {
-                    sendClientMessage(player, "This command is not active.");
+                    Nu::sendClientMessage(player, "This command is not active.");
                     return false;
                 }
                 //print("token length = " + tokens.size());
