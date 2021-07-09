@@ -1,4 +1,4 @@
-#include "NumanLib.as";
+#include "NuLib.as";
 //Zable was a great help with finding problems and suggesting features.
 
 enum CommandType//For the interactive help menu (todo)

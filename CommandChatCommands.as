@@ -1,5 +1,5 @@
 #include "CommandChatCommon.as";
-#include "NumanLib.as";
+#include "NuLib.as";
 
 //!test (number) (playerusername) - Read the stuff below to be informed on how to make commands.
 class Test : CommandBase
