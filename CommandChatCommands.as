@@ -1679,6 +1679,7 @@ class Morph : CommandBase
         if(newBlob != null && newBlob.getWidth() != 0.0f)
         {						
             if(target_blob != null) {
+                target_blob.server_SetPlayer(null);//No idea if this is needed
                 target_blob.server_Die();
             }
             newBlob.server_SetPlayer(target_player);
