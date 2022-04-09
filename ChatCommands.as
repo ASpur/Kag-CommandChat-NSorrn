@@ -502,7 +502,7 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
         }
         else if(target_class == "rules" || target_class == "crules")
         {
-            getRules().AddScript(script_name);
+            Nu::Rules::AddScript(script_name);
         }
         else
         {
