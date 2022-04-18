@@ -1237,29 +1237,42 @@ class Freeze : CommandBase
         return true;
     }
 }
+//!loadmap
 //!nextmap
-class NextMap : CommandBase
+class LoadMapCommand : CommandBase
 {
     void Setup(string[]@ tokens) override
     {
         if(names[0] == 0)
         {
             names[0] = "nextmap".getHash();
+            names[1] = "loadmap".getHash();
         }
         
 
-        active = false;//Command will not work.
+        //active = false;//Command will not work.
 
         permlevel = pAdmin;
 
         blob_must_exist = false;
         commandtype = Template;
+    
+        if(tokens[0] == "loadmap")
+        {
+            minimum_parameter_count = 1;
+        }
     }
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        LoadNextMap();
-
+        if(tokens[0] == "nextmap")
+        {
+            Nu::LoadAMap();
+        }
+        else if(tokens[0] == "loadmap")
+        {
+            Nu::LoadAMap(tokens[1]);
+        }
         return true;
     }
 }
@@ -2417,6 +2430,8 @@ class ReverseGravity : CommandBase
         commandtype = BeyondStupid;
 
         no_sv_test = true;
+
+        blob_must_exist = false;
     }
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
@@ -2429,7 +2444,7 @@ class ReverseGravity : CommandBase
         {
             if (!Nu::IsNumeric(tokens[1]))
             {
-                Nu::sendClientMessage(player ,"The first parameter was not only digits");
+                Nu::sendClientMessage(player, "The first parameter was not only digits");
                 return true;
             }
             warning_time = parseInt(tokens[1]) * 30;
@@ -2457,13 +2472,187 @@ class ReverseGravity : CommandBase
     }
 }
 
+class RulesScriptArray : CommandBase
+{
+    RulesScriptArray()
+    {
+        names[0] = "rulesscriptarray".getHash();
+        names[1] = "rulesscripts".getHash();
+        names[2] = "gamemodescripts".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;
+
+        blob_must_exist = false;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        array<string> script_array = Nu::Rules::getScriptArray();
+        
+        for(u16 i = 0; i < script_array.size(); i++)
+        {
+            Nu::sendClientMessage(player, "Script " + i + " is " + script_array[i]);
+        }
+
+        return true;
+    }
+}
+
+class RulesClearScripts : CommandBase
+{
+    RulesClearScripts()
+    {
+        names[0] = "rulesclearscripts".getHash();
+        names[1] = "clearallscripts".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;
+
+        no_sv_test = true;
+
+        blob_must_exist = false;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        Nu::Rules::ClearScripts();
+        Nu::Rules::AddScript("ChatCommands.as");
+        Nu::sendAllMessage("All rules scripts have been removed. ChatCommands.as added again to prevent loss of rules editing.");
+        return true;
+    }
+}
+
+class RulesAddScript : CommandBase
+{
+    RulesAddScript()
+    {
+        names[0] = "rulesaddscript".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;
+
+        no_sv_test = true;
+
+        blob_must_exist = false;
+
+        minimum_parameter_count = 1;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        if(!Nu::Rules::AddScript(tokens[1])) { Nu::sendClientMessage(player, "Script " + tokens[1] + " did failed to be added to the rules script array. Script may not exist."); return false; }
+        
+        Nu::sendAllMessage("Script " +  tokens[1] + " has been added to rules.");
+        return true;
+    }
+}
+
+class RulesRemoveScript : CommandBase
+{
+    RulesRemoveScript()
+    {
+        names[0] = "rulesremovescript".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;
+
+        no_sv_test = true;
+
+        blob_must_exist = false;
+
+        minimum_parameter_count = 1;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        if(tokens[1] == "ChatCommands.as") { Nu::sendClientMessage(player, "I wouldn't do that is I were you."); return false; }
+        
+        if(!Nu::Rules::RemoveScript(tokens[1])) { Nu::sendClientMessage(player, "Script " + tokens[1] + " could not be removed from the rules array. Is this script actually in the rules script array?"); return false; }
+
+        Nu::sendAllMessage("Script " + tokens[1] + " has been removed.");
+        return true;
+    }
+}
+
+class RulesSetGamemode : CommandBase
+{
+    RulesSetGamemode()
+    {
+        names[0] = "setgamemode".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        permlevel = pSuperAdmin;
+
+        no_sv_test = true;
+
+        blob_must_exist = false;
+
+        minimum_parameter_count = 1;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        string gamemode_name;
+
+        for(u16 i = 1; i < tokens.size(); i++)
+        {
+            if(i != 1)
+            {
+                gamemode_name += " ";
+            }
+            
+            gamemode_name += tokens[i];
+        }
+
+        Nu::Rules::SetGamemode(gamemode_name);
+
+        if(!Nu::Rules::hasScript("ChatCommands.as"))//No ChatCommand.as?
+        {
+            Nu::Rules::AddScript("ChatCommands.as");//Add it, for without it there would be no more easy rules script changing. It'd be like removing the console you used to edit the console. Bad idea.
+        }
+
+        Nu::sendAllMessage("Gamemode set to " + gamemode_name);
+        return true;
+    }
+}
+
+class RulesGamemode : CommandBase
+{
+    RulesGamemode()
+    {
+        names[0] = "gamemode".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        blob_must_exist = false;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        Nu::sendClientMessage(player, "sv_gamemode is currently " + sv_gamemode);
+        return true;
+    }
+}
+
 //Template
 /*
 class Input_Name_Here : CommandBase
 {
     Input_Name_Here()
     {
-        names[0] = "Input_Name_Here".getHash();
+        names[0] = "inputnamehere".getHash();
     }
     void Setup(string[]@ tokens) override
     {

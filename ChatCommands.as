@@ -169,7 +169,7 @@ void onInit(CRules@ this)
         HideCommands(),
         ShowCommands(),//Help menu
         PlayerCount(),
-        NextMap(),
+        LoadMapCommand(),
         SpinEverything(),
         Test(),
         GiveCoin(),
@@ -205,6 +205,12 @@ void onInit(CRules@ this)
         Unmute(),
         MassBlobSpawn(),
         ReverseGravity(),
+        RulesScriptArray(),
+        RulesClearScripts(),
+        RulesAddScript(),
+        RulesRemoveScript(),
+        RulesSetGamemode(),
+        RulesGamemode(),
         CommandCount()//End*/
     };
 
@@ -226,6 +232,11 @@ void onInit(CRules@ this)
     this.set("ChatCommands", commands);
     
 }//End of onInit
+
+void onReload(CRules@ rules)
+{
+    onInit(rules);
+}
 
 void onRestart( CRules@ this )
 {
