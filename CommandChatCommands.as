@@ -2477,8 +2477,9 @@ class RulesScriptArray : CommandBase
     RulesScriptArray()
     {
         names[0] = "rulesscriptarray".getHash();
-        names[1] = "rulesscripts".getHash();
-        names[2] = "gamemodescripts".getHash();
+        names[1] = "gamemodescripts".getHash();
+        names[2] = "scriptlist".getHash();
+        names[3] = "scriptarray".getHash();
     }
 
     void Setup(string[]@ tokens) override
@@ -2492,10 +2493,15 @@ class RulesScriptArray : CommandBase
     {
         array<string> script_array = Nu::Rules::getScriptArray();
         
+        Nu::sendClientMessage(player, "Server scripts:", SColor(255, 0, 255, 0), true);
         for(u16 i = 0; i < script_array.size(); i++)
         {
-            Nu::sendClientMessage(player, "Script " + i + " is " + script_array[i]);
+            Nu::sendClientMessage(player, "Script " + i + " is " + script_array[i], SColor(255, 255, 0, 0), true);
+            print(i + " = " + script_array[i]);
         }
+
+        CBitStream params;
+        rules.SendCommand(rules.getCommandID("scriptlisttochat"), params, player);
 
         return true;
     }
@@ -2520,9 +2526,10 @@ class RulesClearScripts : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        Nu::Rules::ClearScripts();
-        Nu::Rules::AddScript("ChatCommands.as");
-        Nu::sendAllMessage("All rules scripts have been removed. ChatCommands.as added again to prevent loss of rules editing.");
+        Nu::Rules::ClearScripts(true);
+        Nu::Rules::AddScript("ChatCommands.as", true);
+        Nu::Rules::AddScript("NuToolsLogic.as", true);
+        Nu::sendAllMessage("All rules scripts have been removed. ChatCommands.as and NuToolsLogic.as added again to prevent loss of rules editing.");
         return true;
     }
 }
@@ -2547,7 +2554,7 @@ class RulesAddScript : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        if(!Nu::Rules::AddScript(tokens[1])) { Nu::sendClientMessage(player, "Script " + tokens[1] + " did failed to be added to the rules script array. Script may not exist."); return false; }
+        if(!Nu::Rules::AddScript(tokens[1], true)) { Nu::sendClientMessage(player, "Script " + tokens[1] + " did failed to be added to the rules script array. Script may not exist."); return false; }
         
         Nu::sendAllMessage("Script " +  tokens[1] + " has been added to rules.");
         return true;
@@ -2574,9 +2581,9 @@ class RulesRemoveScript : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        if(tokens[1] == "ChatCommands.as") { Nu::sendClientMessage(player, "I wouldn't do that is I were you."); return false; }
+        if(tokens[1] == "ChatCommands.as" || tokens[1] == "NuToolsLogic.as") { Nu::sendClientMessage(player, "I wouldn't do that is I were you."); return false; }
         
-        if(!Nu::Rules::RemoveScript(tokens[1])) { Nu::sendClientMessage(player, "Script " + tokens[1] + " could not be removed from the rules array. Is this script actually in the rules script array?"); return false; }
+        if(!Nu::Rules::RemoveScript(tokens[1], true)) { Nu::sendClientMessage(player, "Script " + tokens[1] + " could not be removed from the rules array. Is this script actually in the rules script array?"); return false; }
 
         Nu::sendAllMessage("Script " + tokens[1] + " has been removed.");
         return true;
@@ -2615,11 +2622,17 @@ class RulesSetGamemode : CommandBase
             gamemode_name += tokens[i];
         }
 
-        Nu::Rules::SetGamemode(gamemode_name);
+        Nu::Rules::SetGamemode(gamemode_name, true);
 
         if(!Nu::Rules::hasScript("ChatCommands.as"))//No ChatCommand.as?
         {
-            Nu::Rules::AddScript("ChatCommands.as");//Add it, for without it there would be no more easy rules script changing. It'd be like removing the console you used to edit the console. Bad idea.
+            print("added ChatCommands.as for saftey");
+            Nu::Rules::AddScript("ChatCommands.as", true);//Add it, for without it there would be no more easy rules script changing. It'd be like removing the console you used to edit the console. Bad idea.
+        }
+        if(!Nu::Rules::hasScript("NuToolsLogic.as"))
+        {
+            print("added NuToolsLogic.as for saftey");
+            Nu::Rules::AddScript("NuToolsLogic.as", true);//Same as above
         }
 
         Nu::sendAllMessage("Gamemode set to " + gamemode_name);
@@ -2641,7 +2654,8 @@ class RulesGamemode : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        Nu::sendClientMessage(player, "sv_gamemode is currently " + sv_gamemode);
+        Nu::sendClientMessage(player, "sv_gamemode is currently " + sv_gamemode + "\nRules gamemode_name is " + rules.gamemode_name);
+        
         return true;
     }
 }
