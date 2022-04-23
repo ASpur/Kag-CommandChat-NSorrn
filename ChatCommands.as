@@ -111,7 +111,7 @@ void onInit(CRules@ this)
 {
     //onCommand stuff	
     this.addCommandID("clientshowhelp");
-    this.addCommandID("scriptlisttochat");
+    this.addCommandID("scriptlisttoconsole");
 	this.addCommandID("allclientshidehelp");
     this.addCommandID("colorlantern");
     this.addCommandID("addscript");	
@@ -471,7 +471,7 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 			client_AddToChat("Hiding help", SColor(255, 255, 0, 0));
 		}
 	}
-    else if(cmd == this.getCommandID("scriptlisttochat"))
+    else if(cmd == this.getCommandID("scriptlisttoconsole"))
     {
         if(!isClient())
         {
@@ -479,13 +479,13 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
         }
         array<string> script_array = Nu::Rules::getScriptArray();
 
-        Nu::sendClientMessage(getLocalPlayer(), "Client scripts:", SColor(255, 0, 255, 0), true);
+        print("Client scripts:", SColor(255, 0, 255, 0));
         for(u16 i = 0; i < script_array.size(); i++)
         {
-            Nu::sendClientMessage(getLocalPlayer(), "Script " + i + " is " + script_array[i], SColor(255, 255, 0, 0), true);
+            print("Script " + i + " is " + script_array[i], SColor(255, 255, 0, 0));
         }
 
-        Nu::sendClientMessage(getLocalPlayer(), "The script list will also be in your console. Press your Home key.");
+        Nu::sendClientMessage(getLocalPlayer(), "The script lists has been put in your console. Press your Home key.");
     }
 	else if(cmd == this.getCommandID("allclientshidehelp"))//hides all gui help overlays for all clients
 	{

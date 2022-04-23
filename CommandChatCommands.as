@@ -2493,15 +2493,14 @@ class RulesScriptArray : CommandBase
     {
         array<string> script_array = Nu::Rules::getScriptArray();
         
-        Nu::sendClientMessage(player, "Server scripts:", SColor(255, 0, 255, 0), true);
+        Nu::sendClientMessage(player, "Server scripts:", SColor(255, 0, 255, 0), true);//The true makes it send to the client's console
         for(u16 i = 0; i < script_array.size(); i++)
         {
             Nu::sendClientMessage(player, "Script " + i + " is " + script_array[i], SColor(255, 255, 0, 0), true);
-            print(i + " = " + script_array[i]);
         }
 
         CBitStream params;
-        rules.SendCommand(rules.getCommandID("scriptlisttochat"), params, player);
+        rules.SendCommand(rules.getCommandID("scriptlisttoconsole"), params, player);
 
         return true;
     }
@@ -2526,10 +2525,10 @@ class RulesClearScripts : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        Nu::Rules::ClearScripts(true);
-        Nu::Rules::AddScript("ChatCommands.as", true);
-        Nu::Rules::AddScript("NuToolsLogic.as", true);
-        Nu::sendAllMessage("All rules scripts have been removed. ChatCommands.as and NuToolsLogic.as added again to prevent loss of rules editing.");
+        array<string> skip_these = { "NuToolsLogic.as", "ChatCommands.as" };
+        Nu::Rules::ClearScripts(true, skip_these);
+
+        Nu::sendAllMessage("All rules scripts have been removed. ChatCommands.as and NuToolsLogic.as skipped to prevent loss of rules editing.");
         return true;
     }
 }
