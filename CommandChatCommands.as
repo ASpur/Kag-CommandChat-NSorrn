@@ -2629,11 +2629,6 @@ class RulesSetGamemode : CommandBase
             print("added ChatCommands.as for saftey");
             Nu::Rules::AddScript("ChatCommands.as", true);//Add it, for without it there would be no more easy rules script changing. It'd be like removing the console you used to edit the console. Bad idea.
         }
-        if(!Nu::Rules::hasScript("NuToolsLogic.as"))
-        {
-            print("added NuToolsLogic.as for saftey");
-            Nu::Rules::AddScript("NuToolsLogic.as", true);//Same as above
-        }
 
         Nu::sendAllMessage("Gamemode set to " + gamemode_name);
         return true;
