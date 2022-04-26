@@ -1840,72 +1840,9 @@ class ForceRespawn : CommandBase
         if(tokens.length == 1)
         {
             @target_player = @player;
-            @target_blob = @blob;
-        }
-        Vec2f[] spawns;
-        Vec2f spawn = Vec2f(0, 0);
-        if (target_player.getTeamNum() == 0)
-        {
-            if(getMap().getMarkers("blue spawn", spawns))
-            {
-                spawn = spawns[ XORRandom(spawns.length) ];
-            }
-            else if(getMap().getMarkers("blue main spawn", spawns))
-            {
-                spawn = spawns[ XORRandom(spawns.length) ];
-            }
-            else
-            {
-                spawn = Vec2f(0,0);
-            }
-        }
-        else if (target_player.getTeamNum() == 1)
-        {
-            if(getMap().getMarkers("red spawn", spawns))
-            {
-                spawn = spawns[ XORRandom(spawns.length) ];
-            }
-            else if(getMap().getMarkers("red main spawn", spawns))
-            {
-                spawn = spawns[ XORRandom(spawns.length) ];
-            }
-            else
-            {
-                spawn = Vec2f(0,0);
-            }
-        }
-        else
-        {
-            CMap@ map = getMap();
-            spawn.x = map.tilesize * 2;//Start two tiles out
-            
-            while(spawn.y == 0.0f)//While no ground is found?
-            {
-                if(spawn.x > map.tilemapwidth * map.tilesize)//If we've gone beyond the right of the map.
-                {
-                    spawn = Vec2f(0,0);//Just default to the top left
-                    break;//And stop
-                }
-                spawn.x += map.tilesize;//Go one tile left
-                spawn.y = Nu::getTileUnderPos(Vec2f(spawn.x, 0));//Find tile below x pos
-            }
-
-            spawn.y -= map.tilesize;//Up y position by one tile of space
         }
 
-        string actor = "knight";
-        if(target_player.lastBlobName != "")
-            actor = target_player.lastBlobName;
-        CBlob@ newBlob = server_CreateBlob(actor, target_player.getTeamNum(), spawn);
-            
-        if(newBlob != null)
-        {
-            @target_blob = @target_player.getBlob();
-            if(target_blob != null) {
-                target_blob.server_Die();
-            }
-            newBlob.server_SetPlayer(target_player);
-        }
+        Nu::RespawnPlayer(rules, target_player);
 
         return true;
     }
