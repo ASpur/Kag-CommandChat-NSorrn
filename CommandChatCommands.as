@@ -1434,6 +1434,7 @@ class ChangeName : CommandBase
     }
 }
 //!teleport "player" - will teleport to that player || !teleport "player" "player2" - will teleport player to player2
+//!tp   . Will teleport to mouse.
 class Teleport : CommandBase
 {
     void Setup(string[]@ tokens) override
@@ -1445,12 +1446,12 @@ class Teleport : CommandBase
         }
         
 
-        target_player_slot = 1;
-		target_player_blob_param = true;//This command requires the target's blob
+        //target_player_slot = 1;
+		//target_player_blob_param = true;//This command requires the target's blob
 
         permlevel = pAdmin;
         commandtype = Template;
-        minimum_parameter_count = 1;
+        //minimum_parameter_count = 1;
 
         if(tokens.length > 2)//Two players that don't have to be the user.
         {
@@ -1460,61 +1461,86 @@ class Teleport : CommandBase
 
     bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
     {
-        if(tokens.length > 2)
+        if(tokens.length > 1)
         {
-            //if(target_player.isBot())
-            //{
-            //    Nu::sendClientMessage(player, "You can not teleport a bot.");
-            //    return false;
-            //}
+            string player_names;
             
-            array<CPlayer@> target_players = Nu::getPlayersByShortUsername(tokens[2]);//Get a list of players that have this as the start of their name
-            if(target_players.size() > 1)//If there is more than 1 player in the list
+            if(Nu::IsNumericNoDots(tokens[1]))//Check if it's a blob
             {
-                string playernames = "";
-                for(int i = 0; i < target_players.size(); i++)//for every player in that list
-                {
-                    playernames += " : " + target_players[i].getUsername();// put their name in a string
-                }
-                Nu::sendClientMessage(player, "There is more than one possible player for the second player param" + playernames);//tell the client that these players in the string were found
-                return false;//don't send the message to chat, don't do anything else
+                @target_blob = @getBlobByNetworkID(parseInt(tokens[1]));
             }
-            else if(target_players.size() == 0)
+            if(target_blob == @null)//Not a blob?
             {
-                Nu::sendClientMessage(player, "No player was found for the second player param.");
-                return false;
+                @target_player = @Nu::getPlayerByShortUsername(tokens[1], player_names);//Get players based on this
+                if(player_names.size() != 0) { //If there were more than one players
+                    Nu::sendClientMessage(player, "There is more than one possible player for the first player param" + player_names);//tell the client that these players in the string were found
+                    return false;//don't send the message to chat, don't do anything else
+                }
+                else if(@target_player == @null)//No players?
+                {
+                    Nu::sendClientMessage(player, "No player was found for the first param.");
+                    return false;
+                }
+
+                @target_blob = @target_player.getBlob();
+                if(target_blob == null) { Nu::sendClientMessage(player, "Could not find specified thing to teleport."); return false; }
             }
 
-            CPlayer@ target_playertwo = target_players[0];
-            
-            CBlob@ target_blobtwo = target_playertwo.getBlob();
-            
-            if(target_blobtwo != null)
+
+            if(tokens.length == 2)
             {
-                Vec2f target_postwo = target_blobtwo.getPosition();
-                target_postwo.y -= 5;
+                Vec2f target_pos = target_blob.getPosition();
+                target_pos.y -= 5;
+
+                CBitStream params;//Assign the params
+                params.write_u16(blob.getNetworkID());
+                params.write_Vec2f(target_pos);
+                rules.SendCommand(rules.getCommandID("teleport"), params);
+            }
+            else if(tokens.length == 3)
+            {
+                //if(target_player.isBot())
+                //{
+                //    Nu::sendClientMessage(player, "You can not teleport a bot.");
+                //    return false;
+                //}
+                CBlob@ target2_blob;
+                if(Nu::IsNumericNoDots(tokens[2]))//Check if it's a blob
+                {
+                    @target2_blob = @getBlobByNetworkID(parseInt(tokens[2]));
+                }
+                if(target2_blob == @null)//Not a blob?
+                {
+                    @target_player = @Nu::getPlayerByShortUsername(tokens[2], player_names);//Get players based on this
+                    if(player_names.size() != 0) { //If there were more than one players
+                        Nu::sendClientMessage(player, "There is more than one possible player for the second player param" + player_names);//tell the client that these players in the string were found
+                        return false;//don't send the message to chat, don't do anything else
+                    }
+                    else if(@target_player == @null)//No players?
+                    {
+                        Nu::sendClientMessage(player, "No player was found for the second param.");
+                        return false;
+                    }
+
+                    @target2_blob = @target_player.getBlob();
+                    if(target2_blob == null) { Nu::sendClientMessage(player, "Could not find a blob on the second specified param."); return false; }
+                }
+
+                Vec2f target_pos2 = target2_blob.getPosition();
+                target_pos2.y -= 5;
 
                 CBitStream params;//Assign the params
 
-                params.write_u16(target_player.getNetworkID());
-                params.write_Vec2f(target_postwo);
+                params.write_u16(target_blob.getNetworkID());
+                params.write_Vec2f(target_pos2);
                 rules.SendCommand(rules.getCommandID("teleport"), params);
             }
-            else
-            {
-                Nu::sendClientMessage(player, "The second specified player's blob does not exist to teleport to it.");
-                return false;
-            }
         }
-        else 
+        else
         {
-            Vec2f target_pos = target_blob.getPosition();
-            target_pos.y -= 5;
-
-            CBitStream params;//Assign the params
-            
-            params.write_u16(player.getNetworkID());
-            params.write_Vec2f(target_pos);
+            CBitStream params;
+            params.write_u16(blob.getNetworkID());
+            params.write_Vec2f(pos);
             rules.SendCommand(rules.getCommandID("teleport"), params);
         }
 
@@ -2475,6 +2501,7 @@ class RulesAddScript : CommandBase
     RulesAddScript()
     {
         names[0] = "rulesaddscript".getHash();
+        names[1] = "ras".getHash();
     }
 
     void Setup(string[]@ tokens) override
@@ -2502,6 +2529,7 @@ class RulesRemoveScript : CommandBase
     RulesRemoveScript()
     {
         names[0] = "rulesremovescript".getHash();
+        names[0] = "rrs".getHash();
     }
 
     void Setup(string[]@ tokens) override
@@ -2590,6 +2618,38 @@ class RulesGamemode : CommandBase
         return true;
     }
 }
+
+class RebuildScripts : CommandBase
+{
+    RebuildScripts()
+    {
+        names[0] = "rebuild".getHash();
+    }
+
+    void Setup(string[]@ tokens) override
+    {
+        blob_must_exist = false;
+
+        permlevel = pSuperAdmin;
+
+        no_sv_test = true;
+    }
+
+    bool CommandCode(CRules@ rules, string[]@ tokens, CPlayer@ player, CBlob@ blob, Vec2f pos, int team, CPlayer@ target_player, CBlob@ target_blob) override
+    {
+        rebuild();
+        
+        return true;
+    }
+}
+
+
+
+
+
+
+
+
 
 //Template
 /*

@@ -111,11 +111,12 @@ void onInit(CRules@ this)
 {
     //onCommand stuff	
     this.addCommandID("clientshowhelp");
+    this.addCommandID("commandwithmpos");
     this.addCommandID("scriptlisttoconsole");
 	this.addCommandID("allclientshidehelp");
     this.addCommandID("colorlantern");
-    this.addCommandID("addscript");	
-    this.addCommandID("flipmovers");	
+    this.addCommandID("addscript");
+    this.addCommandID("flipmovers");
     //onCommand end
 
     if (!GUI::isFontLoaded("AveriaSerif-Bold_22"))
@@ -212,6 +213,7 @@ void onInit(CRules@ this)
         RulesRemoveScript(),
         RulesSetGamemode(),
         RulesGamemode(),
+        RebuildScripts(),
         CommandCount()//End*/
     };
 
@@ -285,33 +287,68 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
         return false;//Instant nope.
     }
 
-	CBlob@ blob = player.getBlob(); // now, when the code references "blob," it means the player who called the command
+    bool mouse_pos = false;
 
-	Vec2f pos;
-	int team;
-	if (blob !is null)
-	{
-		pos = blob.getPosition(); // grab player position (x, y)
-		team = blob.getTeamNum(); // grab player team number (for i.e. making all flags you spawn be your team's flags)
-	}
+    Vec2f pos = Vec2f(0,0);
+	int team = 255;
+
+    if(_text_in.size() > 1 && _text_in[1] == "@"[0])//If the character after ! is @
+    {
+        if(player.get_bool("m_pos"))//If mouse_pos is true
+        {
+            pos = player.get_Vec2f("m_pos_v");//Get the mouse_pos_vec2f
+            player.set_bool("m_pos", false);
+
+            mouse_pos = true;
+        }
+        else//mouse_pos is false
+        {
+            //Send the command to client to get the mouse pos, then remove this message.
+                //The command to client gets mouse pos, then sends a command to the server with it to run onServerProcessChat again. It will also send the message to every client afterwards.
+            //Behavior might be weird if any other onServerProcessChat hooks happen before this.
+
+
+            CBitStream params;
+            params.write_string(_text_in);
+            this.SendCommand(this.getCommandID("commandwithmpos"), params, player);
+        
+            text_out = "";
+            return false;
+        }
+    }
 
     string text_in;
-    if(blob != null)
-    {
-        text_in = atFindAndReplace(blob.getPosition(), _text_in, true, true);
-        text_out = text_in;
-    }
-    else
-    {
-        text_in = _text_in;
-    }
+    
+    text_in = atFindAndReplace(pos, _text_in, !mouse_pos, true);//Replace any @closeplayer with the closest player name. etc.
+    text_out = text_in;
 
-    if(text_in.substr(0, 1) != "!")
+    //Stop if it isn't a command
+    if(_text_in[0] != "!"[0])
     {
         return true;
     }
 
-    string[]@ tokens = (text_in.substr(1, text_in.size())).split(" ");
+	CBlob@ blob = player.getBlob(); // now, when the code references "blob," it means the player who called the command
+
+	if (blob != null)
+	{
+        if(!mouse_pos) {
+		    pos = blob.getPosition(); // grab player position (x, y)
+        }
+        team = blob.getTeamNum(); // grab player team number (for i.e. making all flags you spawn be your team's flags)
+	}
+    
+    u8 blob_name_after;
+    if(!mouse_pos)//Default (!)
+    {
+        blob_name_after = 1;
+    }
+    else//Mouse pos (!@)
+    {
+        blob_name_after = 2;
+    }
+
+    string[]@ tokens = (text_in.substr(blob_name_after, text_in.size())).split(" ");
 
     ICommand@ command = @null;
 
@@ -337,7 +374,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
     //Spawn anything
     if(command == null)//If this isn't a command.
     {
-        if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color") && player.getUsername() != "the1sad1numanator")//If sv_test is not true and the player does not have admin color and the player isn't numan
+        if(!sv_test && !getSecurity().checkAccess_Command(player, "admin_color"))//If sv_test is not true and the player does not have admin color and the player isn't numan
         {
             //Inform the player about not having permissions?
             Nu::sendClientMessage(player, "You don't have permissions to spawn a blob. You may of misspelled a command");
@@ -363,18 +400,19 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
             //Only if getGameTime() is bigger than lastChatTime will commands work.
         }
 
-        string name = text_in.substr(1, text_in.size());
-        if(blob != null)
+        if(blob != null || mouse_pos)
         {
-            CBlob@ created_blob = server_CreateBlob(name, team, pos);
+            CBlob@ created_blob = server_CreateBlob(tokens[0], team, pos);
             if(created_blob.getName() == "")
             {
-                Nu::sendClientMessage(player, "Failed to spawn " + name + ". You may of mispelled a command.");
+                Nu::sendClientMessage(player, "Failed to spawn " + tokens[0] + ". You may of mispelled a command.");
                 return !this.get_bool(player.getUsername() + "_hidecom");
             }
             
             player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);//Set the last sent command time with the delay added.
         }
+
+        player_last_sent.set(""+ player.getNetworkID(), getGameTime() + ChatCommandDelay);//Set the last sent command time with the delay added.
 
         return !this.get_bool(player.getUsername() + "_hidecom");
     }
@@ -446,7 +484,7 @@ bool onServerProcessChat(CRules@ this, const string& in _text_in, string& out te
 	return true;//Returning true sends message to chat
 }
 
-void onCommand( CRules@ this, u8 cmd, CBitStream @params )
+void onCommand( CRules@ this, u8 cmd, CBitStream@ params )
 {
     if(cmd == this.getCommandID("clientshowhelp"))//toggles the gui help overlay
     {
@@ -471,6 +509,64 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 			client_AddToChat("Hiding help", SColor(255, 255, 0, 0));
 		}
 	}
+    else if(cmd == this.getCommandID("commandwithmpos"))
+    {
+        if(isClient())//Client only
+        {
+            CControls@ controls = getControls();
+            if(@controls == @null) { Nu::Error("controls were null?"); return; }
+            
+            CPlayer@ player = getLocalPlayer();
+            if(player == null) { Nu::Error("player was null?"); return; }
+            
+            string text_in;
+            if(!params.saferead_string(text_in)) { Nu::Error("text_in was null?"); return; }
+
+            CBitStream param;
+            param.write_u16(player.getNetworkID());
+            param.write_Vec2f(controls.getMouseWorldPos());
+            param.write_string(text_in);
+            if(isLocalHost())//If localhost
+            {
+                /*CBitStream bs;
+                bs = param;
+                bs.SetBitIndex(param.getBitIndex());
+                @params = @bs;*/
+                //TODO, turn this into NuLib function.
+
+                CBitStream bs;
+                bs = param;
+                bs.SetBitIndex(0);
+                @params = @bs;
+            }
+            else
+            {
+                this.SendCommand(this.getCommandID("commandwithmpos"), param, false);//Send command to server
+            }
+        }
+        if(isServer())//Server only
+        {
+            u16 player_id;
+            if(!params.saferead_u16(player_id)) { Nu::Error("Failed to get player_id"); return; }
+        
+            CPlayer@ player = getPlayerByNetworkId(player_id);
+            if(player == @null) { return; }
+
+            string text_in;
+            Vec2f m_pos;
+            if(!params.saferead_Vec2f(m_pos)) { Nu::Error(""); return; }
+            if(!params.saferead_string(text_in)) { Nu::Error(""); return; }
+            
+            player.set_Vec2f("m_pos_v", m_pos);
+            player.set_bool("m_pos", true);
+
+            if(onServerProcessChat(this, text_in, text_in, player))//Assuming the return is true. as in not muted.
+            {
+                Nu::sendAllMessage(text_in, SColor(255,0,0,0), false);//TODO, see if messages send to logs. keep consistent with vanilla.
+                //print(text_in);
+            }
+        }
+    }
     else if(cmd == this.getCommandID("scriptlisttoconsole"))
     {
         if(!isClient())

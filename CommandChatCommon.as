@@ -463,6 +463,7 @@ string atFindAndReplace(Vec2f point, string text_in, bool skip_one = true, bool 
                     if(target_players.size() > skip_count)
                     {
                         _str = target_players[skip_count].getUsername();
+                        print("str = " + _str);
                         replaced_tokens++;
                     }
                 }
